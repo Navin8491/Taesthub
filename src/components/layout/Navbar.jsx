@@ -7,11 +7,11 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { cartCount } = useCart();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleOrderOnline = (e) => {
     e.preventDefault();
+    setIsMenuOpen(false);
     if (location.pathname !== '/menu') {
       navigate('/menu');
     }
@@ -33,40 +33,40 @@ const Navbar = () => {
           </Link>
 
           <button
-            className="navbar-toggler"
+            className={`navbar-toggler ${isMenuOpen ? '' : 'collapsed'}`}
             type="button"
-            data-toggle="collapse"
-            data-target="#navbarSupportedContent"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-controls="navbarSupportedContent"
-            aria-expanded="false"
+            aria-expanded={isMenuOpen}
             aria-label="Toggle navigation"
           >
             <span className=""> </span>
           </button>
 
-          <div className="collapse navbar-collapse" id="navbarSupportedContent">
+          <div className={`collapse navbar-collapse ${isMenuOpen ? 'show' : ''}`} id="navbarSupportedContent">
             <ul className="navbar-nav mx-auto">
               <li className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}>
-                <Link className="nav-link" to="/">Home <span className="sr-only">(current)</span></Link>
+                <Link className="nav-link" to="/" onClick={() => setIsMenuOpen(false)}>Home <span className="sr-only">(current)</span></Link>
               </li>
               <li className={`nav-item ${location.pathname === '/menu' ? 'active' : ''}`}>
-                <Link className="nav-link" to="/menu">Menu</Link>
+                <Link className="nav-link" to="/menu" onClick={() => setIsMenuOpen(false)}>Menu</Link>
               </li>
               <li className={`nav-item ${location.pathname === '/about' ? 'active' : ''}`}>
-                <Link className="nav-link" to="/about">About</Link>
+                <Link className="nav-link" to="/about" onClick={() => setIsMenuOpen(false)}>About</Link>
               </li>
               <li className={`nav-item ${location.pathname === '/book' ? 'active' : ''}`}>
-                <Link className="nav-link" to="/book">Book Table</Link>
+                <Link className="nav-link" to="/book" onClick={() => setIsMenuOpen(false)}>Book Table</Link>
               </li>
             </ul>
             <div className="user_option">
-              <Link to="" className="user_link">
+              <Link to="" className="user_link" onClick={() => setIsMenuOpen(false)}>
                 <i className="fa fa-user" aria-hidden="true"></i>
               </Link>
               <Link 
                 className="cart_link" 
                 to="/cart"
                 style={{ position: 'relative' }}
+                onClick={() => setIsMenuOpen(false)}
               >
                 <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 456.029 456.029" style={{ enableBackground: 'new 0 0 456.029 456.029' }} xmlSpace="preserve">
                   <g>
@@ -96,6 +96,7 @@ const Navbar = () => {
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (searchQuery.trim()) {
+                    setIsMenuOpen(false);
                     navigate('/menu');
                     setTimeout(() => {
                       const menuSection = document.querySelector('.food_section');
