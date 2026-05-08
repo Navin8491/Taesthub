@@ -26,7 +26,7 @@ const Navbar = () => {
 
   return (
     <header className="header_section">
-      <div className="container-fluid px-4 px-lg-5">
+      <div className="container-fluid px-2 px-md-4">
         <nav className="navbar navbar-expand-lg custom_nav-container">
           <Link className="navbar-brand" to="/">
             <span>TasteHub</span>
