@@ -139,7 +139,7 @@ a:focus {
 }
 
 .header_section {
-  padding: 15px 0;
+  padding: 5px 0;
 }
 
 .header_section .container-fluid {
@@ -162,7 +162,7 @@ a:focus {
 }
 
 .custom_nav-container .navbar-nav {
-  padding-left: 18%;
+  padding-left: 0;
 }
 
 .custom_nav-container .navbar-nav .nav-item .nav-link {
