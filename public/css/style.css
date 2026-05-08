@@ -143,8 +143,15 @@ a:focus {
 }
 
 .header_section .container-fluid {
-  padding-right: 25px;
-  padding-left: 25px;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+@media (min-width: 768px) {
+  .header_section .container-fluid {
+    padding-right: 25px;
+    padding-left: 25px;
+  }
 }
 
 .navbar-brand {
