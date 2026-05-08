@@ -21,7 +21,7 @@ const AboutSection = () => {
             <div className="detail-box">
               <div className="heading_container">
                 <h2>
-                  We Are Feane
+                  We Are TasteHub
                 </h2>
               </div>
               <p>

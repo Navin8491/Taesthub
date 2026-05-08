@@ -29,7 +29,7 @@ const Navbar = () => {
       <div className="container-fluid px-4 px-lg-5">
         <nav className="navbar navbar-expand-lg custom_nav-container">
           <Link className="navbar-brand" to="/">
-            <span>Feane</span>
+            <span>TasteHub</span>
           </Link>
 
           <button
