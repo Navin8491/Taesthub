@@ -11,42 +11,34 @@ const AboutSection = () => {
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Image sliding in from left
-      gsap.fromTo(".img-box",
-        { x: -100, opacity: 0 },
-        {
-          x: 0,
-          opacity: 1,
-          duration: 1,
-          ease: "power3.out",
-          clearProps: "all",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 80%",
-            toggleActions: "play none none none",
-            once: true
-          }
+      gsap.from(".img-box", {
+        x: -100,
+        opacity: 0,
+        duration: 1,
+        ease: "power3.out",
+        clearProps: "all",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 80%",
+          once: true
         }
-      );
+      });
 
       // Text elements staggering in from bottom
       const detailElements = gsap.utils.toArray(".detail-box > *");
-      gsap.fromTo(detailElements,
-        { y: 50, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          stagger: 0.15,
-          ease: "power3.out",
-          clearProps: "all",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 80%",
-            toggleActions: "play none none none",
-            once: true
-          }
+      gsap.from(detailElements, {
+        y: 30,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "power3.out",
+        clearProps: "all",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 80%",
+          once: true
         }
-      );
+      });
     }, sectionRef);
 
     return () => ctx.revert();
