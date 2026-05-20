@@ -24,13 +24,11 @@ const AboutSection = () => {
         }
       });
 
-      // Text elements staggering in from bottom
-      const detailElements = gsap.utils.toArray(".detail-box > *");
-      gsap.from(detailElements, {
+      // Text fading in from bottom
+      gsap.from(".about-text", {
         y: 30,
         opacity: 0,
-        duration: 0.8,
-        stagger: 0.15,
+        duration: 1,
         ease: "power3.out",
         clearProps: "all",
         scrollTrigger: {
@@ -45,7 +43,7 @@ const AboutSection = () => {
   }, []);
 
   return (
-    <section 
+    <section
       ref={sectionRef}
       className="about_section layout_padding"
     >
@@ -58,20 +56,20 @@ const AboutSection = () => {
             </div>
           </div>
           <div className="col-lg-6">
-            <div className="detail-box ps-lg-5">
+            <div className="about-text detail-box ps-lg-5 relative z-10 opacity-100 visible" style={{ opacity: 1, visibility: 'visible', display: 'block' }}>
               <div className="heading_container mb-4">
-                <h2 style={{ fontFamily: "'Dancing Script', cursive", fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', color: '#1E1E1E', fontWeight: 'bold' }}>
+                <h2 style={{ fontFamily: "'Dancing Script', cursive", fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', color: '#2d2d2d', fontWeight: 'bold' }}>
                   We Are TasteHub
                 </h2>
               </div>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.05rem', color: '#555', lineHeight: 1.7, marginBottom: '25px' }}>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.05rem', color: '#2d2d2d', lineHeight: 1.7, marginBottom: '25px' }}>
                 At TasteHub, we believe that great food brings people together. Born from a passion for culinary excellence and a love for authentic, high-quality ingredients, our café serves as a warm, inviting space where every meal is an experience.
               </p>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.05rem', color: '#555', lineHeight: 1.7, marginBottom: '35px' }}>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.05rem', color: '#2d2d2d', lineHeight: 1.7, marginBottom: '35px' }}>
                 Whether you're stopping by for your morning artisan coffee, enjoying our signature wood-fired pizzas, or treating yourself to our handcrafted pastries, we are dedicated to providing a premium dining experience that feels like home.
               </p>
-              <Link 
-                to="/about" 
+              <Link
+                to="/about"
                 onClick={() => window.scrollTo(0, 0)}
                 className="btn"
                 style={{
