@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, ShoppingCart } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -50,74 +50,63 @@ const OfferSection = () => {
         <div className="container-fluid px-4 px-lg-5">
           <div className="row">
             <div className="col-md-6 offer-box" style={{ opacity: 0 }}>
-              <motion.div className="box " whileHover={{ scale: 1.02 }} transition={{ type: 'spring', stiffness: 300 }}>
-                <div className="img-box">
+              <motion.div 
+                className="d-flex flex-column flex-xl-row align-items-center p-4 bg-white" 
+                style={{ borderRadius: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', gap: '24px', height: '100%' }}
+                whileHover={{ scale: 1.02, boxShadow: '0 15px 35px rgba(0,0,0,0.12)' }} 
+                transition={{ type: 'spring', stiffness: 300 }}
+              >
+                <div style={{ width: '180px', height: '180px', flexShrink: 0, borderRadius: '50%', overflow: 'hidden', border: '5px solid #F8F5F2', boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }}>
                   <img src="/images/o1.jpg" alt="Tasty Thursdays" loading="lazy" decoding="async" style={{ 
                     width: '100%', 
                     height: '100%', 
                     objectFit: 'cover',
                     transition: 'transform 0.6s cubic-bezier(0.33, 1, 0.68, 1)'
-                  }} />
+                  }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'} />
                 </div>
-                <div className="detail-box">
-                  <h5>
+                <div className="d-flex flex-column align-items-xl-start align-items-center text-center text-xl-start">
+                  <h5 style={{ fontFamily: "'Dancing Script', cursive", fontSize: '2.5rem', color: '#1E1E1E', margin: 0, fontWeight: 'bold' }}>
                     Tasty Thursdays
                   </h5>
-                  <h6>
-                    <span>20%</span> Off
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.95rem', color: '#666', margin: '10px 0 15px 0', lineHeight: 1.5 }}>
+                    Enjoy our signature premium burger packed with fresh ingredients and a side of crispy golden fries.
+                  </p>
+                  <h6 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '1.2rem', color: '#6F4E37', fontWeight: 600, margin: '0 0 20px 0' }}>
+                    <span style={{ fontSize: '1.8rem', color: '#D9A066' }}>20%</span> Off
                   </h6>
-                  <a href="#" onClick={(e) => { e.preventDefault(); handleAddToCart({ id: 'o1', name: 'Tasty Thursdays Burger', price: 12, category: 'burger', image: '/images/o1.jpg' }); }}>
-                    Order Now <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 456.029 456.029" style={{ enableBackground: 'new 0 0 456.029 456.029' }} xmlSpace="preserve">
-                      <g>
-                        <g>
-                          <path d="M345.6,338.862c-29.184,0-53.248,23.552-53.248,53.248c0,29.184,23.552,53.248,53.248,53.248 c29.184,0,53.248-23.552,53.248-53.248C398.336,362.926,374.784,338.862,345.6,338.862z" />
-                        </g>
-                      </g>
-                      <g>
-                        <g>
-                          <path d="M439.296,84.91c-1.024,0-2.56-0.512-4.096-0.512H112.64l-5.12-34.304C104.448,27.566,84.992,10.67,61.952,10.67H20.48 C9.216,10.67,0,19.886,0,31.15c0,11.264,9.216,20.48,20.48,20.48h41.472c2.56,0,4.608,2.048,5.12,4.608l31.744,216.064 c4.096,27.136,27.648,47.616,55.296,47.616h212.992c26.624,0,49.664-18.944,55.296-45.056l33.28-166.4 C457.728,97.71,450.56,86.958,439.296,84.91z" />
-                        </g>
-                      </g>
-                      <g>
-                        <g>
-                          <path d="M215.04,389.55c-1.024-28.16-24.576-50.688-52.736-50.688c-29.696,1.536-52.224,26.112-51.2,55.296 c1.024,28.16,24.064,50.688,52.224,50.688h1.024C193.536,443.31,216.576,418.734,215.04,389.55z" />
-                        </g>
-                      </g>
-                    </svg>
+                  <a href="#" onClick={(e) => { e.preventDefault(); handleAddToCart({ id: 'o1', name: 'Tasty Thursdays Burger', price: 12, category: 'burger', image: '/images/o1.jpg' }); }} className="btn" style={{ backgroundColor: '#D9A066', color: '#fff', borderRadius: '45px', padding: '10px 28px', fontWeight: 600, fontSize: '0.95rem', display: 'inline-flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s ease' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#6F4E37'; e.currentTarget.style.transform = 'translateY(-2px)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#D9A066'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                    Order Now <ShoppingCart size={18} />
                   </a>
                 </div>
               </motion.div>
             </div>
             <div className="col-md-6 offer-box" style={{ opacity: 0 }}>
-              <motion.div className="box " whileHover={{ scale: 1.02 }} transition={{ type: 'spring', stiffness: 300 }}>
-                <div className="img-box">
-                  <img src="/images/o2.jpg" alt="" />
+              <motion.div 
+                className="d-flex flex-column flex-xl-row align-items-center p-4 bg-white" 
+                style={{ borderRadius: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', gap: '24px', height: '100%' }}
+                whileHover={{ scale: 1.02, boxShadow: '0 15px 35px rgba(0,0,0,0.12)' }} 
+                transition={{ type: 'spring', stiffness: 300 }}
+              >
+                <div style={{ width: '180px', height: '180px', flexShrink: 0, borderRadius: '50%', overflow: 'hidden', border: '5px solid #F8F5F2', boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }}>
+                  <img src="/images/o2.jpg" alt="Pizza Days" loading="lazy" decoding="async" style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover',
+                    transition: 'transform 0.6s cubic-bezier(0.33, 1, 0.68, 1)'
+                  }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'} />
                 </div>
-                <div className="detail-box">
-                  <h5>
+                <div className="d-flex flex-column align-items-xl-start align-items-center text-center text-xl-start">
+                  <h5 style={{ fontFamily: "'Dancing Script', cursive", fontSize: '2.5rem', color: '#1E1E1E', margin: 0, fontWeight: 'bold' }}>
                     Pizza Days
                   </h5>
-                  <h6>
-                    <span>15%</span> Off
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.95rem', color: '#666', margin: '10px 0 15px 0', lineHeight: 1.5 }}>
+                    Savor the taste of Italy with our wood-fired pizza, featuring rich tomato sauce and melted mozzarella.
+                  </p>
+                  <h6 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '1.2rem', color: '#6F4E37', fontWeight: 600, margin: '0 0 20px 0' }}>
+                    <span style={{ fontSize: '1.8rem', color: '#D9A066' }}>15%</span> Off
                   </h6>
-                  <a href="#" onClick={(e) => { e.preventDefault(); handleAddToCart({ id: 'o2', name: 'Pizza Days Special', price: 15, category: 'pizza', image: '/images/o2.jpg' }); }}>
-                    Order Now <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 456.029 456.029" style={{ enableBackground: 'new 0 0 456.029 456.029' }} xmlSpace="preserve">
-                      <g>
-                        <g>
-                          <path d="M345.6,338.862c-29.184,0-53.248,23.552-53.248,53.248c0,29.184,23.552,53.248,53.248,53.248 c29.184,0,53.248-23.552,53.248-53.248C398.336,362.926,374.784,338.862,345.6,338.862z" />
-                        </g>
-                      </g>
-                      <g>
-                        <g>
-                          <path d="M439.296,84.91c-1.024,0-2.56-0.512-4.096-0.512H112.64l-5.12-34.304C104.448,27.566,84.992,10.67,61.952,10.67H20.48 C9.216,10.67,0,19.886,0,31.15c0,11.264,9.216,20.48,20.48,20.48h41.472c2.56,0,4.608,2.048,5.12,4.608l31.744,216.064 c4.096,27.136,27.648,47.616,55.296,47.616h212.992c26.624,0,49.664-18.944,55.296-45.056l33.28-166.4 C457.728,97.71,450.56,86.958,439.296,84.91z" />
-                        </g>
-                      </g>
-                      <g>
-                        <g>
-                          <path d="M215.04,389.55c-1.024-28.16-24.576-50.688-52.736-50.688c-29.696,1.536-52.224,26.112-51.2,55.296 c1.024,28.16,24.064,50.688,52.224,50.688h1.024C193.536,443.31,216.576,418.734,215.04,389.55z" />
-                        </g>
-                      </g>
-                    </svg>
+                  <a href="#" onClick={(e) => { e.preventDefault(); handleAddToCart({ id: 'o2', name: 'Pizza Days Special', price: 15, category: 'pizza', image: '/images/o2.jpg' }); }} className="btn" style={{ backgroundColor: '#D9A066', color: '#fff', borderRadius: '45px', padding: '10px 28px', fontWeight: 600, fontSize: '0.95rem', display: 'inline-flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s ease' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#6F4E37'; e.currentTarget.style.transform = 'translateY(-2px)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#D9A066'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                    Order Now <ShoppingCart size={18} />
                   </a>
                 </div>
               </motion.div>
