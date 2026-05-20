@@ -55,12 +55,12 @@ const Navbar = () => {
       width: '100%',
       zIndex: 1000,
       transition: 'all 0.3s ease-in-out',
-      background: isScrolled ? 'rgba(30, 30, 30, 0.85)' : 'transparent',
-      backdropFilter: isScrolled ? 'blur(10px)' : 'none',
-      WebkitBackdropFilter: isScrolled ? 'blur(10px)' : 'none',
-      boxShadow: isScrolled ? '0 4px 30px rgba(0, 0, 0, 0.1)' : 'none',
-      borderBottom: isScrolled ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid transparent',
-      padding: isScrolled ? '10px 0' : '20px 0'
+      background: (isScrolled || location.pathname !== '/') ? 'rgba(111, 78, 55, 0.85)' : 'transparent',
+      backdropFilter: (isScrolled || location.pathname !== '/') ? 'blur(12px)' : 'none',
+      WebkitBackdropFilter: (isScrolled || location.pathname !== '/') ? 'blur(12px)' : 'none',
+      boxShadow: (isScrolled || location.pathname !== '/') ? '0 4px 30px rgba(0, 0, 0, 0.15)' : 'none',
+      borderBottom: (isScrolled || location.pathname !== '/') ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid transparent',
+      padding: (isScrolled || location.pathname !== '/') ? '12px 0' : '20px 0'
     }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         
