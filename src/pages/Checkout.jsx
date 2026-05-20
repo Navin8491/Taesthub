@@ -12,7 +12,7 @@ const Checkout = () => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
-      style={{ minHeight: '80vh', backgroundColor: '#f8f9fa' }}
+      style={{ minHeight: '80vh', backgroundColor: '#F8F5F2' }}
     >
       <div className="container-fluid px-4 px-lg-5">
         <div className="heading_container heading_center mb-5">
@@ -23,7 +23,7 @@ const Checkout = () => {
           <div className="text-center">
             <h3>Your cart is empty!</h3>
             <p>Please add some items to your cart before checking out.</p>
-            <Link to="/menu" className="btn btn-warning mt-3" style={{ borderRadius: '45px', padding: '10px 30px', color: '#fff' }}>
+            <Link to="/menu" className="btn btn-warning mt-3" style={{ borderRadius: '45px', padding: '10px 30px', color: '#fff', backgroundColor: '#6F4E37', borderColor: '#6F4E37' }}>
               Back to Menu
             </Link>
           </div>
@@ -62,7 +62,7 @@ const Checkout = () => {
             </div>
 
             <div className="col-lg-4">
-              <div className="card shadow-sm border-0" style={{ borderRadius: '15px', backgroundColor: '#222831', color: '#fff' }}>
+              <div className="card shadow-sm border-0" style={{ borderRadius: '15px', backgroundColor: '#FFFFFF', color: '#1E1E1E' }}>
                 <div className="card-body p-4">
                   <h4 className="mb-4" style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 'bold' }}>Order Summary</h4>
                   <div className="order-items mb-4">
@@ -82,12 +82,12 @@ const Checkout = () => {
                     <span>Delivery Fee</span>
                     <span>$5.00</span>
                   </div>
-                  <div className="d-flex justify-content-between mb-4 mt-3 pt-3 border-top" style={{ borderColor: 'rgba(255,255,255,0.1) !important', fontSize: '20px', fontWeight: 'bold', color: '#ffbe33' }}>
+                  <div className="d-flex justify-content-between mb-4 mt-3 pt-3 border-top" style={{ borderColor: 'rgba(0,0,0,0.1) !important', fontSize: '20px', fontWeight: 'bold', color: '#6F4E37' }}>
                     <span>Total</span>
                     <span>${(cartTotal + 5).toFixed(2)}</span>
                   </div>
 
-                  <button className="btn w-100" style={{ backgroundColor: '#ffbe33', color: '#fff', borderRadius: '45px', padding: '12px', fontWeight: 'bold', fontSize: '18px' }}>
+                  <button className="btn w-100" style={{ backgroundColor: '#6F4E37', color: '#fff', borderRadius: '45px', padding: '12px', fontWeight: 'bold', fontSize: '18px' }}>
                     Place Order
                   </button>
                 </div>
