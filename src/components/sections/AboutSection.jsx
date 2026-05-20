@@ -1,20 +1,63 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const AboutSection = () => {
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Image sliding in from left
+      gsap.fromTo(".img-box",
+        { x: -100, opacity: 0 },
+        {
+          x: 0,
+          opacity: 1,
+          duration: 1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 75%",
+            toggleActions: "play none none none"
+          }
+        }
+      );
+
+      // Text elements staggering in from bottom
+      const detailElements = gsap.utils.toArray(".detail-box > *");
+      gsap.fromTo(detailElements,
+        { y: 50, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 75%",
+            toggleActions: "play none none none"
+          }
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <motion.section 
+    <section 
+      ref={sectionRef}
       className="about_section layout_padding"
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.8 }}
     >
       <div className="container-fluid px-4 px-lg-5">
         <div className="row">
           <div className="col-md-6 ">
             <div className="img-box">
-              <img src="/images/about-img.png" alt="" />
+              <img src="/images/about-img.png" alt="About TasteHub" loading="lazy" decoding="async" />
             </div>
           </div>
           <div className="col-md-6">
@@ -40,7 +83,7 @@ const AboutSection = () => {
           </div>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 };
 

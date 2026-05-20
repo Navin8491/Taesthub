@@ -1,11 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
+import { CheckCircle2 } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const OfferSection = () => {
   const { addToCart } = useCart();
   const [toastMessage, setToastMessage] = useState('');
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const boxes = gsap.utils.toArray('.offer-box');
+      gsap.fromTo(boxes, 
+        { y: 60, opacity: 0 },
+        { 
+          y: 0, 
+          opacity: 1, 
+          duration: 0.8, 
+          stagger: 0.2, 
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            toggleActions: "play none none none"
+          }
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
 
   const handleAddToCart = (item) => {
     addToCart(item);
@@ -13,20 +42,22 @@ const OfferSection = () => {
     setTimeout(() => setToastMessage(''), 3000);
   };
   return (
-    <motion.section 
+    <section 
+      ref={sectionRef}
       className="offer_section layout_padding-bottom"
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.8 }}
     >
       <div className="offer_container">
         <div className="container-fluid px-4 px-lg-5">
           <div className="row">
-            <div className="col-md-6  ">
+            <div className="col-md-6 offer-box" style={{ opacity: 0 }}>
               <motion.div className="box " whileHover={{ scale: 1.02 }} transition={{ type: 'spring', stiffness: 300 }}>
                 <div className="img-box">
-                  <img src="/images/o1.jpg" alt="" />
+                  <img src="/images/o1.jpg" alt="Tasty Thursdays" loading="lazy" decoding="async" style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover',
+                    transition: 'transform 0.6s cubic-bezier(0.33, 1, 0.68, 1)'
+                  }} />
                 </div>
                 <div className="detail-box">
                   <h5>
@@ -57,7 +88,7 @@ const OfferSection = () => {
                 </div>
               </motion.div>
             </div>
-            <div className="col-md-6  ">
+            <div className="col-md-6 offer-box" style={{ opacity: 0 }}>
               <motion.div className="box " whileHover={{ scale: 1.02 }} transition={{ type: 'spring', stiffness: 300 }}>
                 <div className="img-box">
                   <img src="/images/o2.jpg" alt="" />
@@ -106,8 +137,8 @@ const OfferSection = () => {
               position: 'fixed',
               bottom: '30px',
               right: '30px',
-              backgroundColor: '#222831',
-              color: '#fff',
+              backgroundColor: '#FFFFFF',
+              color: '#1E1E1E',
               padding: '15px 25px',
               borderRadius: '8px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
@@ -117,12 +148,12 @@ const OfferSection = () => {
               gap: '10px'
             }}
           >
-            <i className="fa fa-check-circle" style={{ color: '#28a745', fontSize: '20px' }}></i>
+            <CheckCircle2 color="#28a745" size={20} />
             <span style={{ fontWeight: '500' }}>{toastMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.section>
+    </section>
   );
 };
 

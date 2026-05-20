@@ -1,40 +1,89 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const testimonials = [
   {
     id: 1,
     name: "Moana Michell",
-    subtitle: "magna aliqua",
-    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam",
+    subtitle: "Food Enthusiast",
+    rating: 5,
+    text: "The flavors here are absolutely incredible. Every dish feels like a work of art. The atmosphere is warm and the service is truly exceptional. I highly recommend the premium pasta!",
     image: "/images/client1.jpg"
   },
   {
     id: 2,
     name: "Mike Hamell",
-    subtitle: "magna aliqua",
-    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam",
+    subtitle: "Local Guide",
+    rating: 5,
+    text: "I've been to many cafes, but TasteHub stands out. The coffee is roasted to perfection and their signature burgers are bursting with flavor. A must-visit spot in the city.",
     image: "/images/client2.jpg"
   },
   {
     id: 3,
     name: "John Doe",
-    subtitle: "magna aliqua",
-    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam",
+    subtitle: "Coffee Connoisseur",
+    rating: 4,
+    text: "Stunning interior and beautifully presented food. The caramel latte is to die for. It can get a bit busy during lunch, but the quality never dips. Excellent experience overall.",
     image: "/images/client1.jpg"
   },
   {
     id: 4,
     name: "Jane Smith",
-    subtitle: "magna aliqua",
-    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam",
+    subtitle: "Pastry Chef",
+    rating: 5,
+    text: "As someone who bakes professionally, I am blown away by their artisan pizzas. The crust is perfectly fermented and charred. Absolutely delicious and perfectly balanced.",
     image: "/images/client2.jpg"
   }
 ];
 
 const ClientSection = () => {
   const [current, setCurrent] = useState(0);
+  const sectionRef = useRef(null);
 
+  // GSAP Scroll Animation
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(".heading_container",
+        { y: 50, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            toggleActions: "play none none none"
+          }
+        }
+      );
+
+      gsap.fromTo(".carousel-wrap",
+        { y: 50, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          delay: 0.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            toggleActions: "play none none none"
+          }
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  // Carousel Logic
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % (testimonials.length - 1)); // -1 because we show 2 at a time
@@ -50,68 +99,179 @@ const ClientSection = () => {
     setCurrent((prev) => (prev + 1) % (testimonials.length - 1));
   };
 
+  // Render Stars
+  const renderStars = (rating) => {
+    return (
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '15px' }}>
+        {[...Array(5)].map((_, i) => (
+          <Star 
+            key={i} 
+            size={16} 
+            fill={i < rating ? '#D9A066' : 'transparent'} 
+            color={i < rating ? '#D9A066' : '#ccc'} 
+          />
+        ))}
+      </div>
+    );
+  };
+
   return (
-    <motion.section 
+    <section 
+      ref={sectionRef}
       className="client_section layout_padding-bottom"
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.8 }}
+      style={{ padding: 'clamp(50px, 10vw, 90px) 0', backgroundColor: '#F8F5F2' }}
     >
-      <div className="container-fluid px-4 px-lg-5">
-        <div className="heading_container heading_center psudo_white_primary mb_45">
-          <h2>What Says Our Customers</h2>
+      <div className="container-fluid px-4 px-lg-5" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        <div className="heading_container heading_center mb-5">
+          <h2 style={{ fontFamily: "'Dancing Script', cursive", fontSize: 'clamp(2rem, 5vw, 3rem)', color: '#1E1E1E', fontWeight: 'bold' }}>
+            What Our Customers Say
+          </h2>
         </div>
         <div className="carousel-wrap">
           <div className="client_owl-carousel" style={{ position: 'relative', overflow: 'hidden', paddingBottom: '60px' }}>
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode="wait">
               <motion.div
                 key={current}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
-                className="row"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.05 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="row justify-content-center"
               >
                 {[testimonials[current], testimonials[current + 1]].map((testimonial, idx) => (
                   <div key={`${testimonial.id}-${idx}`} className="col-md-6 mb-4 mb-md-0">
-                    <div className="item">
-                      <div className="box">
-                        <div className="detail-box">
-                          <p>{testimonial.text}</p>
-                          <h6>{testimonial.name}</h6>
-                          <p>{testimonial.subtitle}</p>
+                    <motion.div 
+                      className="testimonial-card"
+                      whileHover={{ scale: 1.02, y: -5 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.7)',
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        borderRadius: '24px',
+                        padding: '40px',
+                        height: '100%',
+                        border: '1px solid rgba(255, 255, 255, 0.4)',
+                        boxShadow: '0 15px 35px rgba(0, 0, 0, 0.04)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        position: 'relative',
+                        zIndex: 1
+                      }}
+                    >
+                      {/* Customer Info Header */}
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '20px' }}>
+                        <div style={{ 
+                          width: '80px', 
+                          height: '80px', 
+                          borderRadius: '50%', 
+                          overflow: 'hidden',
+                          border: '4px solid #FFFFFF',
+                          boxShadow: '0 5px 15px rgba(0,0,0,0.08)'
+                        }}>
+                          <img src={testimonial.image} alt={testimonial.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
-                        <div className="img-box">
-                          <img src={testimonial.image} alt="" className="box-img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div>
+                          <h6 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '1.2rem', fontWeight: 600, color: '#1E1E1E', margin: '0 0 5px 0' }}>
+                            {testimonial.name}
+                          </h6>
+                          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#6F4E37', margin: 0, fontWeight: 500 }}>
+                            {testimonial.subtitle}
+                          </p>
                         </div>
                       </div>
-                    </div>
+
+                      {/* Stars */}
+                      {renderStars(testimonial.rating)}
+
+                      {/* Review Text */}
+                      <p style={{ 
+                        fontFamily: "'Inter', sans-serif", 
+                        fontSize: '1.05rem', 
+                        color: '#444', 
+                        lineHeight: 1.7, 
+                        margin: 0,
+                        fontStyle: 'italic',
+                        position: 'relative'
+                      }}>
+                        "{testimonial.text}"
+                      </p>
+                      
+                      {/* Decorative Quote Icon Background */}
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '20px',
+                        right: '30px',
+                        fontSize: '6rem',
+                        fontFamily: "serif",
+                        color: 'rgba(111, 78, 55, 0.05)',
+                        zIndex: -1,
+                        lineHeight: 1
+                      }}>
+                        "
+                      </div>
+                    </motion.div>
                   </div>
                 ))}
               </motion.div>
             </AnimatePresence>
 
             {/* Custom Carousel Navigation */}
-            <div className="owl-nav" style={{ display: 'flex', justifyContent: 'center', marginTop: '45px', padding: '0 15px' }}>
+            <div className="carousel_btn-box" style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '40px' }}>
               <button 
                 onClick={handlePrev} 
-                style={{ width: '45px', height: '45px', backgroundColor: '#ffbe33', color: '#ffffff', outline: 'none', border: 'none', fontSize: '24px', margin: '0 5px', borderRadius: '100%', cursor: 'pointer' }}
+                className="carousel-control-prev"
+                type="button"
+                style={{ 
+                  position: 'relative', 
+                  width: '50px', 
+                  height: '50px', 
+                  background: '#D9A066', 
+                  borderRadius: '50%', 
+                  opacity: 1, 
+                  border: 'none', 
+                  transition: 'all 0.3s ease', 
+                  boxShadow: '0 4px 15px rgba(217, 160, 102, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
               >
-                <i className="fa fa-angle-left" aria-hidden="true"></i>
+                <ChevronLeft color="#FFFFFF" size={24} />
               </button>
               <button 
                 onClick={handleNext} 
-                style={{ width: '45px', height: '45px', backgroundColor: '#ffbe33', color: '#ffffff', outline: 'none', border: 'none', fontSize: '24px', margin: '0 5px', borderRadius: '100%', cursor: 'pointer' }}
+                className="carousel-control-next"
+                type="button" 
+                style={{ 
+                  position: 'relative', 
+                  width: '50px', 
+                  height: '50px', 
+                  background: '#D9A066', 
+                  borderRadius: '50%', 
+                  opacity: 1, 
+                  border: 'none', 
+                  transition: 'all 0.3s ease', 
+                  boxShadow: '0 4px 15px rgba(217, 160, 102, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
               >
-                <i className="fa fa-angle-right" aria-hidden="true"></i>
+                <ChevronRight color="#FFFFFF" size={24} />
               </button>
             </div>
 
           </div>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 };
 
