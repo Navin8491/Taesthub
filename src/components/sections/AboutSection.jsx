@@ -18,12 +18,10 @@ const AboutSection = () => {
           opacity: 1,
           duration: 1,
           ease: "power3.out",
-          clearProps: "all",
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: "top 80%",
-            toggleActions: "play none none none",
-            once: true
+            start: "top 75%",
+            toggleActions: "play none none none"
           }
         }
       );
@@ -41,7 +39,7 @@ const AboutSection = () => {
           clearProps: "all",
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: "top 80%",
+            start: "top 75%",
             toggleActions: "play none none none",
             once: true
           }
@@ -53,7 +51,7 @@ const AboutSection = () => {
   }, []);
 
   return (
-    <section 
+    <section
       ref={sectionRef}
       className="about_section layout_padding"
     >
@@ -78,8 +76,8 @@ const AboutSection = () => {
               <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.05rem', color: '#555', lineHeight: 1.7, marginBottom: '35px' }}>
                 Whether you're stopping by for your morning artisan coffee, enjoying our signature wood-fired pizzas, or treating yourself to our handcrafted pastries, we are dedicated to providing a premium dining experience that feels like home.
               </p>
-              <Link 
-                to="/about" 
+              <Link
+                to="/about"
                 onClick={() => window.scrollTo(0, 0)}
                 className="btn"
                 style={{
