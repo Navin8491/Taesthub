@@ -54,7 +54,7 @@ const AboutSection = () => {
         opacity: 0,
         duration: 1,
         ease: "power3.out",
-        clearProps: "all",
+        clearProps: "opacity,transform",
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top 80%",
@@ -70,7 +70,7 @@ const AboutSection = () => {
         duration: 0.8,
         stagger: 0.2,
         ease: "power3.out",
-        clearProps: "all",
+        clearProps: "opacity,transform",
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top 80%",
@@ -86,7 +86,7 @@ const AboutSection = () => {
         duration: 0.8,
         stagger: 0.15,
         ease: "back.out(1.2)",
-        clearProps: "all",
+        clearProps: "opacity,transform",
         scrollTrigger: {
           trigger: ".stats-container",
           start: "top 90%",
