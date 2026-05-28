@@ -216,7 +216,7 @@ const Navbar = () => {
           {/* Mobile Menu Toggle */}
           <button 
             className="mobile-toggle"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={() => setIsMobileMenuOpen(true)}
             style={{
               background: 'none',
               border: 'none',
@@ -227,78 +227,121 @@ const Navbar = () => {
               marginLeft: '5px'
             }}
           >
-            <AnimatePresence mode="wait">
-              {isMobileMenuOpen ? (
-                <motion.div key="close" initial={{ opacity: 0, rotate: -90 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: 90 }} transition={{ duration: 0.2 }}>
-                  <X size={28} />
-                </motion.div>
-              ) : (
-                <motion.div key="menu" initial={{ opacity: 0, rotate: 90 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: -90 }} transition={{ duration: 0.2 }}>
-                  <Menu size={28} />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <Menu size={28} />
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu Slide-in Drawer */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            style={{
-              background: 'rgba(30, 30, 30, 0.95)',
-              backdropFilter: 'blur(10px)',
-              overflow: 'hidden',
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              width: '100%',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
-            }}
-          >
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              {navLinks.map((link) => {
-                const isActive = location.pathname === link.path;
-                return (
-                  <Link 
-                    key={link.name} 
-                    to={link.path}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      color: isActive ? '#D9A066' : '#ffffff',
-                      textDecoration: 'none',
-                      fontSize: '1.2rem',
-                      fontWeight: 500,
-                      padding: '10px 0',
-                      borderBottom: '1px solid rgba(255,255,255,0.05)'
-                    }}
-                  >
-                    {link.name}
-                  </Link>
-                )
-              })}
-              <a href="#" onClick={handleOrderOnline} style={{
-                background: '#6F4E37',
-                color: '#ffffff',
-                padding: '12px 20px',
-                borderRadius: '50px',
-                fontFamily: "'Poppins', sans-serif",
-                fontWeight: 600,
-                textDecoration: 'none',
-                fontSize: '1rem',
-                textAlign: 'center',
-                marginTop: '10px'
-              }}>
-                Order Online
-              </a>
-            </div>
-          </motion.div>
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                background: 'rgba(0, 0, 0, 0.4)',
+                backdropFilter: 'blur(6px)',
+                WebkitBackdropFilter: 'blur(6px)',
+                zIndex: 9999
+              }}
+            />
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              style={{
+                position: 'fixed',
+                top: 0,
+                right: 0,
+                width: '300px',
+                height: '100vh',
+                background: 'rgba(111, 78, 55, 0.96)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                boxShadow: '-10px 0 30px rgba(0, 0, 0, 0.25)',
+                zIndex: 10000,
+                padding: '100px 30px 40px 30px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}
+            >
+              {/* Close button inside drawer */}
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                style={{
+                  position: 'absolute',
+                  top: '25px',
+                  right: '25px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  padding: '5px'
+                }}
+              >
+                <X size={28} />
+              </button>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {navLinks.map((link) => {
+                  const isActive = location.pathname === link.path;
+                  return (
+                    <Link 
+                      key={link.name} 
+                      to={link.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      style={{
+                        fontFamily: "'Poppins', sans-serif",
+                        color: isActive ? '#ffbe33' : '#ffffff',
+                        textDecoration: 'none',
+                        fontSize: '1.25rem',
+                        fontWeight: 600,
+                        padding: '10px 0',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                        transition: 'color 0.3s ease'
+                      }}
+                    >
+                      {link.name}
+                    </Link>
+                  )
+                })}
+              </div>
+
+              <div>
+                <a href="#" onClick={handleOrderOnline} style={{
+                  display: 'block',
+                  background: '#ffbe33',
+                  color: '#1E1E1E',
+                  padding: '14px 20px',
+                  borderRadius: '50px',
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  fontSize: '1.1rem',
+                  textAlign: 'center',
+                  boxShadow: '0 8px 20px rgba(255, 190, 51, 0.3)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  Order Online
+                </a>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

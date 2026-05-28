@@ -3,7 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ShoppingCart, Check } from 'lucide-react';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const menuItems = [
   { id: 1, name: "Delicious Pizza", category: "pizza", price: 20, desc: "Premium mozzarella, fresh basil, and our signature tomato sauce on a hand-tossed crust.", image: "/images/f1.png" },
@@ -39,22 +42,55 @@ const MenuSection = ({ hideHeading = false }) => {
 
   const displayedItems = filteredItems.slice(0, visibleCount);
 
-  // GSAP Stagger Animation for Grid
+  // GSAP ScrollTrigger & Stagger Animation for Grid
   useEffect(() => {
     if (gridRef.current) {
       const cards = gridRef.current.querySelectorAll('.menu-card-wrapper');
-      gsap.fromTo(cards, 
-        { opacity: 0, y: 50, scale: 0.95 }, 
-        { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1, 
-          duration: 0.6, 
-          stagger: 0.1, 
-          ease: "back.out(1.2)",
-          clearProps: "all" 
+      
+      // Reset previous ScrollTriggers for this element
+      ScrollTrigger.getAll().forEach(t => {
+        if (t.vars.trigger === gridRef.current) {
+          t.kill();
         }
-      );
+      });
+
+      // If category has changed and page is scrolled past the grid header, animate immediately
+      const isScrolledPast = gridRef.current.getBoundingClientRect().top < window.innerHeight;
+      
+      if (isScrolledPast) {
+        gsap.fromTo(cards, 
+          { opacity: 0, y: 30, scale: 0.95 }, 
+          { 
+            opacity: 1, 
+            y: 0, 
+            scale: 1, 
+            duration: 0.5, 
+            stagger: 0.06, 
+            ease: "power2.out",
+            clearProps: "opacity,transform"
+          }
+        );
+      } else {
+        gsap.fromTo(cards, 
+          { opacity: 0, y: 50, scale: 0.95 }, 
+          { 
+            opacity: 1, 
+            y: 0, 
+            scale: 1, 
+            duration: 0.6, 
+            stagger: 0.08, 
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: gridRef.current,
+              start: "top 85%",
+              once: true
+            },
+            onComplete: () => {
+              gsap.set(cards, { clearProps: "opacity,transform" });
+            }
+          }
+        );
+      }
     }
   }, [filter, visibleCount]);
 
@@ -94,31 +130,7 @@ const MenuSection = ({ hideHeading = false }) => {
               <button 
                 key={f.value} 
                 onClick={() => { setFilter(f.value); setVisibleCount(6); }}
-                style={{ 
-                  padding: '10px 24px', 
-                  borderRadius: '50px',
-                  border: isActive ? 'none' : '1px solid rgba(111, 78, 55, 0.2)',
-                  backgroundColor: isActive ? '#6F4E37' : '#FFFFFF',
-                  color: isActive ? '#FFFFFF' : '#1E1E1E',
-                  fontFamily: "'Poppins', sans-serif",
-                  fontWeight: 500,
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: isActive ? '0 8px 20px rgba(111, 78, 55, 0.3)' : '0 2px 10px rgba(0,0,0,0.02)'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.borderColor = '#6F4E37';
-                    e.currentTarget.style.color = '#6F4E37';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.borderColor = 'rgba(111, 78, 55, 0.2)';
-                    e.currentTarget.style.color = '#1E1E1E';
-                  }
-                }}
+                className={`category-filter-btn ${isActive ? 'active' : ''}`}
               >
                 {f.label}
               </button>
@@ -127,125 +139,36 @@ const MenuSection = ({ hideHeading = false }) => {
         </div>
 
         {/* Grid Container */}
-        <div ref={gridRef} className="row g-4 justify-content-center">
+        <div 
+          ref={gridRef} 
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
+          style={{ maxWidth: '1200px', margin: '0 auto' }}
+        >
           {displayedItems.map((item) => (
-            <div key={item.id} className="col-sm-6 col-lg-4 col-xl-4 menu-card-wrapper">
-              <div 
-                className="menu-card" 
-                style={{
-                  backgroundColor: '#FFFFFF',
-                  borderRadius: '24px',
-                  padding: '20px',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
-                  transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-10px)';
-                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(111,78,55,0.15)';
-                  const img = e.currentTarget.querySelector('.card-image');
-                  if (img) img.style.transform = 'scale(1.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.05)';
-                  const img = e.currentTarget.querySelector('.card-image');
-                  if (img) img.style.transform = 'scale(1)';
-                }}
-              >
+            <div key={item.id} className="menu-card-wrapper" style={{ height: '100%' }}>
+              <div className="premium-menu-card">
                 {/* Price Badge */}
-                <div style={{
-                  position: 'absolute',
-                  top: '20px',
-                  right: '20px',
-                  backgroundColor: '#D9A066',
-                  color: '#FFFFFF',
-                  padding: '8px 16px',
-                  borderRadius: '20px',
-                  fontFamily: "'Poppins', sans-serif",
-                  fontWeight: 700,
-                  fontSize: '1.1rem',
-                  zIndex: 2,
-                  boxShadow: '0 4px 10px rgba(217, 160, 102, 0.4)'
-                }}>
+                <div className="price-badge">
                   ${item.price}
                 </div>
 
                 {/* Image Container */}
-                <div style={{
-                  height: '220px',
-                  width: '100%',
-                  borderRadius: '16px',
-                  overflow: 'hidden',
-                  backgroundColor: '#F8F5F2',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '20px'
-                }}>
-                  <img src={item.image} alt={item.name} loading="lazy" decoding="async" style={{ 
-                            width: '100%', 
-                            height: '100%', 
-                            objectFit: 'contain',
-                            filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.15))',
-                            transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
-                          }} />
+                <div className="image-container">
+                  <img src={item.image} alt={item.name} loading="lazy" decoding="async" />
                 </div>
 
                 {/* Content */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <h5 style={{ 
-                    fontFamily: "'Poppins', sans-serif", 
-                    fontWeight: 600, 
-                    color: '#1E1E1E', 
-                    fontSize: '1.25rem',
-                    marginBottom: '10px'
-                  }}>
+                <div className="card-content">
+                  <h5 className="food-title">
                     {item.name}
                   </h5>
-                  <p style={{ 
-                    fontFamily: "'Inter', sans-serif", 
-                    color: '#666', 
-                    fontSize: '0.95rem',
-                    lineHeight: 1.5,
-                    flex: 1,
-                    marginBottom: '20px'
-                  }}>
+                  <p className="food-desc">
                     {item.desc}
                   </p>
 
                   <button 
                     onClick={(e) => { e.preventDefault(); handleAddToCart(item); }}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      backgroundColor: '#1E1E1E',
-                      color: '#FFFFFF',
-                      fontFamily: "'Poppins', sans-serif",
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '10px',
-                      transition: 'all 0.3s ease',
-                      marginTop: 'auto'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#6F4E37';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1E1E1E';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
+                    className="add-cart-btn"
                   >
                     <ShoppingCart size={18} /> Add to Cart
                   </button>

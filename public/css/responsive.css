@@ -38,15 +38,31 @@ padding-left: 0;
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 991px) {
+  .about_section .row {
+    flex-direction: column !important; /* Stack image above text */
+  }
+  .about_section .img-box {
+    max-width: 450px;
+    margin: 0 auto 35px auto;
+  }
+  .about_section .about-text {
+    text-align: center;
+    padding-left: 0 !important;
+  }
+  .about_section .about-text-content p {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .about_section .about-btn {
+    margin: 0 auto !important;
+  }
+}
 
+@media (max-width: 767px) {
   .about_section .detail-box,
   .book_section .form_container {
     margin-bottom: 45px;
-  }
-
-  .about_section .row {
-    flex-direction: column-reverse;
   }
 
   .offer_section .box {
