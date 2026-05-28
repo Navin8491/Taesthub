@@ -43,7 +43,18 @@ const testimonials = [
 
 const ClientSection = () => {
   const [current, setCurrent] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const sectionRef = useRef(null);
+
+  // Responsive check for testimonials count
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // GSAP Scroll Animation
   useEffect(() => {
@@ -86,17 +97,25 @@ const ClientSection = () => {
   // Carousel Logic
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % (testimonials.length - 1)); // -1 because we show 2 at a time
+      const maxLimit = isMobile ? testimonials.length : testimonials.length - 1;
+      setCurrent((prev) => (prev + 1) % maxLimit);
     }, 6000);
     return () => clearInterval(timer);
-  }, []);
+  }, [isMobile]);
 
   const handlePrev = () => {
-    setCurrent((prev) => (prev === 0 ? testimonials.length - 2 : prev - 1));
+    setCurrent((prev) => {
+      if (isMobile) {
+        return prev === 0 ? testimonials.length - 1 : prev - 1;
+      } else {
+        return prev === 0 ? testimonials.length - 2 : prev - 1;
+      }
+    });
   };
 
   const handleNext = () => {
-    setCurrent((prev) => (prev + 1) % (testimonials.length - 1));
+    const maxLimit = isMobile ? testimonials.length : testimonials.length - 1;
+    setCurrent((prev) => (prev + 1) % maxLimit);
   };
 
   // Render Stars
@@ -138,7 +157,10 @@ const ClientSection = () => {
                 transition={{ duration: 0.5, ease: "easeInOut" }}
                 className="row justify-content-center"
               >
-                {[testimonials[current], testimonials[current + 1]].map((testimonial, idx) => (
+                {(isMobile 
+                  ? [testimonials[current]] 
+                  : [testimonials[current], testimonials[current + 1]].filter(Boolean)
+                ).map((testimonial, idx) => (
                   <div key={`${testimonial.id}-${idx}`} className="col-md-6 mb-4 mb-md-0">
                     <motion.div 
                       className="testimonial-card"
@@ -149,7 +171,7 @@ const ClientSection = () => {
                         backdropFilter: 'blur(12px)',
                         WebkitBackdropFilter: 'blur(12px)',
                         borderRadius: '24px',
-                        padding: '40px',
+                        padding: 'clamp(20px, 5vw, 40px)',
                         height: '100%',
                         border: '1px solid rgba(255, 255, 255, 0.4)',
                         boxShadow: '0 15px 35px rgba(0, 0, 0, 0.04)',

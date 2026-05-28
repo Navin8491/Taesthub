@@ -23,11 +23,11 @@ const AboutSection = () => {
         stagger: 1
       });
 
-      // Image entrance and floating loop
-      gsap.fromTo(".img-box", 
-        { x: -100, opacity: 0 },
+      // Image entrance (zooms slightly) and floating loop
+      gsap.fromTo(".img-box img",
+        { scale: 0.9, opacity: 0 },
         {
-          x: 0,
+          scale: 1,
           opacity: 1,
           duration: 1.2,
           ease: "power3.out",
@@ -48,51 +48,92 @@ const AboutSection = () => {
         }
       );
 
-      // Heading slide-in
-      gsap.from(".about-title", {
-        x: -80,
-        opacity: 0,
-        duration: 1,
-        ease: "power3.out",
-        clearProps: "opacity,transform",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%",
-          once: true
+      // Heading fade-up
+      gsap.fromTo(".about-title",
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 1,
+          ease: "power3.out",
+          clearProps: "opacity,transform",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            once: true
+          }
         }
-      });
+      );
 
       // Paragraphs stagger fade-up
       const textElements = gsap.utils.toArray(".about-text-content > p");
-      gsap.from(textElements, {
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: "power3.out",
-        clearProps: "opacity,transform",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%",
-          once: true
+      gsap.fromTo(textElements,
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.2,
+          ease: "power3.out",
+          clearProps: "opacity,transform",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            once: true
+          }
         }
-      });
+      );
 
-      // Stats cards stagger reveal
-      const statCards = gsap.utils.toArray(".stat-card");
-      gsap.from(statCards, {
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.15,
-        ease: "back.out(1.2)",
-        clearProps: "opacity,transform",
-        scrollTrigger: {
-          trigger: ".stats-container",
-          start: "top 90%",
-          once: true
+      // Button slide upward
+      gsap.fromTo(".about-btn",
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: "power3.out",
+          clearProps: "opacity,transform",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            once: true
+          }
         }
-      });
+      );
+
+      // Stats cards stagger reveal and count up
+      const statCards = gsap.utils.toArray(".stat-card");
+      gsap.fromTo(statCards,
+        { y: 40, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: "back.out(1.2)",
+          clearProps: "opacity,transform",
+          scrollTrigger: {
+            trigger: ".stats-container",
+            start: "top 90%",
+            once: true,
+            onEnter: () => {
+              const countElements = document.querySelectorAll(".count-number");
+              countElements.forEach((el) => {
+                const target = parseInt(el.getAttribute("data-target"), 10);
+                const obj = { val: 0 };
+                gsap.to(obj, {
+                  val: target,
+                  duration: 2,
+                  ease: "power2.out",
+                  onUpdate: () => {
+                    el.textContent = Math.floor(obj.val);
+                  }
+                });
+              });
+            }
+          }
+        }
+      );
 
     }, sectionRef);
 
@@ -100,10 +141,10 @@ const AboutSection = () => {
   }, []);
 
   const stats = [
-    { icon: <Star size={28} color="#D9A066" />, title: "10+ Years", subtitle: "Experience" },
-    { icon: <Users size={28} color="#D9A066" />, title: "5000+", subtitle: "Happy Customers" },
-    { icon: <Utensils size={28} color="#D9A066" />, title: "50+", subtitle: "Signature Dishes" },
-    { icon: <Leaf size={28} color="#D9A066" />, title: "Fresh", subtitle: "Ingredients Daily" }
+    { icon: <Star size={28} color="#D9A066" />, targetValue: 10, suffix: "+ Years", subtitle: "Experience" },
+    { icon: <Users size={28} color="#D9A066" />, targetValue: 5000, suffix: "+", subtitle: "Happy Customers" },
+    { icon: <Utensils size={28} color="#D9A066" />, targetValue: 50, suffix: "+", subtitle: "Signature Dishes" },
+    { icon: <Leaf size={28} color="#D9A066" />, isText: true, text: "Fresh", subtitle: "Ingredients Daily" }
   ];
 
   return (
@@ -149,16 +190,16 @@ const AboutSection = () => {
           <div className="col-lg-6">
             <div className="about-text detail-box ps-lg-5 relative z-10 opacity-100 visible" style={{ opacity: 1, visibility: 'visible', display: 'block' }}>
               <div className="heading_container mb-4">
-                <h2 className="about-title" style={{ fontFamily: "'Dancing Script', cursive", fontSize: 'clamp(2.5rem, 5vw, 4rem)', color: '#2d2d2d', fontWeight: 'bold', lineHeight: 1.2 }}>
+                <h2 className="about-title text-[#2D2D2D] opacity-100 visibility-visible" style={{ fontFamily: "'Dancing Script', cursive", fontSize: 'clamp(2.5rem, 5vw, 4rem)', color: '#2D2D2D', fontWeight: 'bold', lineHeight: 1.2 }}>
                   We Are TasteHub
                 </h2>
               </div>
               
               <div className="about-text-content">
-                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', color: '#333', lineHeight: 1.8, marginBottom: '25px', maxWidth: '600px' }}>
+                <p className="text-[#2D2D2D] opacity-100 visibility-visible" style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', color: '#2D2D2D', lineHeight: 1.8, marginBottom: '25px', maxWidth: '600px' }}>
                   At TasteHub, we believe that great food brings people together. Born from a passion for culinary excellence and a love for authentic, high-quality ingredients, our café serves as a warm, inviting space where every meal is an experience.
                 </p>
-                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', color: '#333', lineHeight: 1.8, marginBottom: '30px', maxWidth: '600px' }}>
+                <p className="text-[#2D2D2D] opacity-100 visibility-visible" style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', color: '#2D2D2D', lineHeight: 1.8, marginBottom: '30px', maxWidth: '600px' }}>
                   Whether you're stopping by for your morning artisan coffee, enjoying our signature wood-fired pizzas, or treating yourself to our handcrafted pastries, we are dedicated to providing a premium dining experience that feels like home.
                 </p>
               </div>
@@ -175,10 +216,10 @@ const AboutSection = () => {
                   >
                     <div style={{ paddingTop: '10px', paddingBottom: '30px', maxWidth: '600px' }}>
                       <h4 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '1.2rem', color: '#1E1E1E', fontWeight: 600, marginBottom: '15px' }}>Our Philosophy</h4>
-                      <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', color: '#333', lineHeight: 1.8, marginBottom: '20px' }}>
+                      <p className="text-[#2D2D2D] opacity-100 visibility-visible" style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', color: '#2D2D2D', lineHeight: 1.8, marginBottom: '20px' }}>
                         We adhere to a strict handmade food philosophy. Every dish is crafted from scratch using fresh ingredients delivered daily from local farms. Our chefs blend traditional techniques with modern culinary innovation.
                       </p>
-                      <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', color: '#333', lineHeight: 1.8, marginBottom: '10px' }}>
+                      <p className="text-[#2D2D2D] opacity-100 visibility-visible" style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', color: '#2D2D2D', lineHeight: 1.8, marginBottom: '10px' }}>
                         Step into our warm café environment, designed with minimal luxury in mind, and let our dedicated team provide you with a truly premium service experience.
                       </p>
                     </div>
@@ -189,7 +230,7 @@ const AboutSection = () => {
               {/* Read More / Show Less Button */}
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="btn"
+                className="btn about-btn"
                 style={{
                   background: 'linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%)',
                   color: '#FFFFFF',
@@ -247,7 +288,7 @@ const AboutSection = () => {
                   WebkitBackdropFilter: 'blur(15px)',
                   border: '1px solid rgba(255, 255, 255, 0.8)',
                   borderRadius: '20px',
-                  padding: '30px 20px',
+                  padding: 'clamp(20px, 5vw, 30px) clamp(15px, 4vw, 20px)',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
@@ -271,7 +312,14 @@ const AboutSection = () => {
                   {stat.icon}
                 </div>
                 <h3 style={{ fontFamily: "'Poppins', sans-serif", fontSize: '1.4rem', fontWeight: 700, color: '#1E1E1E', marginBottom: '5px' }}>
-                  {stat.title}
+                  {stat.isText ? (
+                    <span>{stat.text}</span>
+                  ) : (
+                    <span>
+                      <span className="count-number" data-target={stat.targetValue}>0</span>
+                      {stat.suffix}
+                    </span>
+                  )}
                 </h3>
                 <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.95rem', color: '#666', margin: 0 }}>
                   {stat.subtitle}

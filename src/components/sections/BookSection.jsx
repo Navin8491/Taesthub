@@ -127,7 +127,7 @@ const BookSection = () => {
               background: 'rgba(255, 255, 255, 0.7)',
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
-              padding: '40px',
+              padding: 'clamp(20px, 5vw, 40px)',
               borderRadius: '24px',
               border: '1px solid rgba(255, 255, 255, 0.4)',
               boxShadow: '0 20px 40px rgba(0,0,0,0.05)'
@@ -225,7 +225,7 @@ const BookSection = () => {
                 background: 'rgba(255, 255, 255, 0.7)',
                 backdropFilter: 'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)',
-                padding: '30px',
+                padding: 'clamp(20px, 4vw, 30px)',
                 borderRadius: '24px',
                 border: '1px solid rgba(255, 255, 255, 0.4)',
                 boxShadow: '0 20px 40px rgba(0,0,0,0.05)'

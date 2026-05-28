@@ -51,7 +51,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="hero-section" ref={containerRef} style={{ position: 'relative', zIndex: 2, height: 'calc(100vh - 130px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}>
+    <section className="hero-section" ref={containerRef} style={{ position: 'relative', zIndex: 2, minHeight: 'calc(100vh - 80px)', height: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '110px 20px 80px 20px' }}>
       
       <div className="glass-container" style={{
         background: 'rgba(255, 255, 255, 0.05)',
@@ -59,7 +59,7 @@ const HeroSection = () => {
         WebkitBackdropFilter: 'blur(10px)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
         borderRadius: '24px',
-        padding: '3rem 2rem',
+        padding: 'clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem)',
         maxWidth: '800px',
         width: '100%',
         textAlign: 'center',

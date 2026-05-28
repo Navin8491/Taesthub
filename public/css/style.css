@@ -1011,4 +1011,191 @@ a:focus {
 .footer_section .footer-info p a {
   color: inherit;
 }
+
+/* Grid & Layout Utilities */
+.grid {
+  display: grid;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.gap-6 {
+  gap: 1.5rem;
+}
+
+.gap-8 {
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .xl\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Premium modern restaurant UI Menu Section */
+.premium-menu-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(217, 160, 102, 0.15);
+  border-radius: 28px;
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(111, 78, 55, 0.04), 0 2px 10px rgba(0, 0, 0, 0.02);
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.premium-menu-card:hover {
+  transform: translateY(-8px);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(217, 160, 102, 0.4);
+  box-shadow: 0 20px 40px rgba(111, 78, 55, 0.12), 0 10px 20px rgba(0, 0, 0, 0.04);
+}
+
+.premium-menu-card .image-container {
+  height: 220px;
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  background: radial-gradient(circle, rgba(253, 245, 230, 0.8) 0%, rgba(245, 236, 225, 0.5) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.premium-menu-card .image-container img {
+  width: 85%;
+  height: 85%;
+  object-fit: contain;
+  filter: drop-shadow(0 15px 20px rgba(0, 0, 0, 0.12));
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.premium-menu-card:hover .image-container img {
+  transform: scale(1.08) rotate(2deg);
+}
+
+.premium-menu-card .price-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #D9A066 0%, #B8804A 100%);
+  color: #FFFFFF;
+  padding: 8px 18px;
+  border-radius: 30px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  z-index: 2;
+  box-shadow: 0 6px 15px rgba(217, 160, 102, 0.35);
+  transition: all 0.3s ease;
+}
+
+.premium-menu-card:hover .price-badge {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(217, 160, 102, 0.5);
+}
+
+.premium-menu-card .card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.premium-menu-card .food-title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  color: #1E1E1E;
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+  transition: color 0.3s ease;
+}
+
+.premium-menu-card:hover .food-title {
+  color: #6F4E37;
+}
+
+.premium-menu-card .food-desc {
+  font-family: 'Inter', sans-serif;
+  color: #666666;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  flex: 1;
+  margin-bottom: 22px;
+}
+
+.premium-menu-card .add-cart-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%);
+  color: #FFFFFF;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  margin-top: auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.premium-menu-card:hover .add-cart-btn {
+  background: linear-gradient(135deg, #D9A066 0%, #B8804A 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(217, 160, 102, 0.4);
+}
+
+/* Category Filter Buttons */
+.category-filter-btn {
+  padding: 12px 28px;
+  border-radius: 50px;
+  border: 1px solid rgba(111, 78, 55, 0.15);
+  background-color: #FFFFFF;
+  color: #2D2D2D;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.category-filter-btn:hover {
+  transform: scale(1.05);
+  border-color: #6F4E37;
+  color: #6F4E37;
+  box-shadow: 0 6px 15px rgba(111, 78, 55, 0.1);
+}
+
+.category-filter-btn.active {
+  background: linear-gradient(135deg, #6F4E37 0%, #553C2A 100%);
+  color: #FFFFFF;
+  border: none;
+  box-shadow: 0 10px 25px rgba(111, 78, 55, 0.35);
+}
+
+.category-filter-btn.active:hover {
+  box-shadow: 0 12px 30px rgba(111, 78, 55, 0.45);
+}
+
 /*# sourceMappingURL=style.css.map */
