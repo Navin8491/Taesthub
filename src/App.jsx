@@ -22,6 +22,10 @@ const About = React.lazy(() => import('./pages/About'));
 const Book = React.lazy(() => import('./pages/Book'));
 const Cart = React.lazy(() => import('./pages/Cart'));
 const Checkout = React.lazy(() => import('./pages/Checkout'));
+const Login = React.lazy(() => import('./pages/Login'));
+const Register = React.lazy(() => import('./pages/Register'));
+const Profile = React.lazy(() => import('./pages/Profile'));
+const OrderHistory = React.lazy(() => import('./pages/OrderHistory'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -78,6 +82,10 @@ const AppContent = () => {
           <Route path="/book" element={<Suspense fallback={<SuspenseFallback />}><motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Book /></motion.div></Suspense>} />
           <Route path="/checkout" element={<Suspense fallback={<SuspenseFallback />}><motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Checkout /></motion.div></Suspense>} />
           <Route path="/cart" element={<Suspense fallback={<SuspenseFallback />}><motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Cart /></motion.div></Suspense>} />
+          <Route path="/login" element={<Suspense fallback={<SuspenseFallback />}><motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Login /></motion.div></Suspense>} />
+          <Route path="/register" element={<Suspense fallback={<SuspenseFallback />}><motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Register /></motion.div></Suspense>} />
+          <Route path="/profile" element={<Suspense fallback={<SuspenseFallback />}><motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Profile /></motion.div></Suspense>} />
+          <Route path="/orders" element={<Suspense fallback={<SuspenseFallback />}><motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><OrderHistory /></motion.div></Suspense>} />
           <Route path="*" element={<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><div className="text-center py-5"><h2>Page Not Found</h2><Link to="/" className="btn btn-warning mt-3">Go Home</Link></div></motion.div>} />
         </Routes>
       </AnimatePresence>
@@ -88,13 +96,16 @@ const AppContent = () => {
 };
 
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
     <CartProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AuthProvider>
     </CartProvider>
   );
 }
