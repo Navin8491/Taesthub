@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Search, User, ShoppingCart } from 'lucide-react';
+import { Menu, X, Search, User, ShoppingCart, LogOut, ShoppingBag } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { cartCount } = useCart();
+  const { currentUser, logout } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Handle scroll for sticky glassmorphism effect
   useEffect(() => {
@@ -124,9 +127,157 @@ const Navbar = () => {
         {/* Action Buttons - Right */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', zIndex: 1001 }}>
           
-          <Link to="" style={{ color: '#ffffff', transition: 'color 0.3s' }} onMouseEnter={e => e.currentTarget.style.color = '#D9A066'} onMouseLeave={e => e.currentTarget.style.color = '#ffffff'}>
-            <User size={20} />
-          </Link>
+          {/* User Icon & Dropdown */}
+          <div 
+            style={{ position: 'relative' }}
+            onMouseEnter={() => setIsDropdownOpen(true)}
+            onMouseLeave={() => setIsDropdownOpen(false)}
+          >
+            {currentUser ? (
+              <>
+                <button
+                  onClick={() => navigate('/profile')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    cursor: 'pointer',
+                    padding: '5px 0',
+                    transition: 'color 0.3s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#D9A066'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#ffffff'}
+                >
+                  <User size={20} />
+                  <span style={{ fontSize: '13px', fontWeight: 500, fontFamily: "'Inter', sans-serif" }} className="user-nav-name">
+                    {currentUser.firstName}
+                  </span>
+                </button>
+
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 15 }}
+                      transition={{ duration: 0.2 }}
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        right: 0,
+                        width: '200px',
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: '12px',
+                        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)',
+                        border: '1px solid rgba(0, 0, 0, 0.05)',
+                        padding: '10px 0',
+                        zIndex: 1002,
+                        marginTop: '5px',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {/* Greeting */}
+                      <div style={{
+                        padding: '8px 20px',
+                        fontSize: '13px',
+                        borderBottom: '1px solid #F3F3F3',
+                        color: '#6F4E37',
+                        fontWeight: 600,
+                        fontFamily: "'Poppins', sans-serif"
+                      }}>
+                        Hello, {currentUser.firstName}!
+                      </div>
+
+                      {/* Links */}
+                      <Link 
+                        to="/profile" 
+                        onClick={() => setIsDropdownOpen(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 20px',
+                          color: '#1E1E1E',
+                          fontSize: '14px',
+                          fontFamily: "'Inter', sans-serif",
+                          textDecoration: 'none',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = '#F8F5F2'}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <User size={14} color="#6F4E37" />
+                        My Profile
+                      </Link>
+
+                      <Link 
+                        to="/orders" 
+                        onClick={() => setIsDropdownOpen(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 20px',
+                          color: '#1E1E1E',
+                          fontSize: '14px',
+                          fontFamily: "'Inter', sans-serif",
+                          textDecoration: 'none',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = '#F8F5F2'}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <ShoppingBag size={14} color="#6F4E37" />
+                        Order History
+                      </Link>
+
+                      <div style={{ borderTop: '1px solid #F3F3F3', marginTop: '5px', paddingTop: '5px' }} />
+
+                      <button
+                        onClick={() => {
+                          logout();
+                          setIsDropdownOpen(false);
+                          navigate('/');
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          width: '100%',
+                          border: 'none',
+                          background: 'none',
+                          padding: '10px 20px',
+                          color: '#DE3434',
+                          fontSize: '14px',
+                          fontFamily: "'Inter', sans-serif",
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = '#FDF2F2'}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <LogOut size={14} />
+                        Log Out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            ) : (
+              <Link 
+                to="/login" 
+                style={{ color: '#ffffff', display: 'flex', alignItems: 'center', padding: '5px 0', transition: 'color 0.3s' }} 
+                onMouseEnter={e => e.currentTarget.style.color = '#D9A066'} 
+                onMouseLeave={e => e.currentTarget.style.color = '#ffffff'}
+              >
+                <User size={20} />
+              </Link>
+            )}
+          </div>
           
           <Link to="/cart" style={{ color: '#ffffff', position: 'relative', transition: 'color 0.3s' }} onMouseEnter={e => e.currentTarget.style.color = '#D9A066'} onMouseLeave={e => e.currentTarget.style.color = '#ffffff'}>
             <ShoppingCart size={20} />
@@ -317,6 +468,91 @@ const Navbar = () => {
                     </Link>
                   )
                 })}
+
+                {/* Mobile Account Links */}
+                {currentUser ? (
+                  <>
+                    <div style={{
+                      color: '#ffbe33',
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      marginTop: '15px'
+                    }}>
+                      Account: {currentUser.firstName}
+                    </div>
+                    <Link 
+                      to="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      style={{
+                        fontFamily: "'Poppins', sans-serif",
+                        color: location.pathname === '/profile' ? '#ffbe33' : '#ffffff',
+                        textDecoration: 'none',
+                        fontSize: '1.15rem',
+                        fontWeight: 500,
+                        padding: '5px 0',
+                        transition: 'color 0.3s ease'
+                      }}
+                    >
+                      My Profile
+                    </Link>
+                    <Link 
+                      to="/orders"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      style={{
+                        fontFamily: "'Poppins', sans-serif",
+                        color: location.pathname === '/orders' ? '#ffbe33' : '#ffffff',
+                        textDecoration: 'none',
+                        fontSize: '1.15rem',
+                        fontWeight: 500,
+                        padding: '5px 0',
+                        transition: 'color 0.3s ease'
+                      }}
+                    >
+                      Order History
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setIsMobileMenuOpen(false);
+                        navigate('/');
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#ff6b6b',
+                        fontFamily: "'Poppins', sans-serif",
+                        textDecoration: 'none',
+                        fontSize: '1.15rem',
+                        fontWeight: 600,
+                        padding: '5px 0',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        transition: 'color 0.3s ease'
+                      }}
+                    >
+                      Log Out
+                    </button>
+                  </>
+                ) : (
+                  <Link 
+                    to="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    style={{
+                      fontFamily: "'Poppins', sans-serif",
+                      color: location.pathname === '/login' ? '#ffbe33' : '#ffffff',
+                      textDecoration: 'none',
+                      fontSize: '1.25rem',
+                      fontWeight: 600,
+                      padding: '10px 0',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      transition: 'color 0.3s ease'
+                    }}
+                  >
+                    Log In / Sign Up
+                  </Link>
+                )}
               </div>
 
               <div>
@@ -346,6 +582,9 @@ const Navbar = () => {
       </AnimatePresence>
 
       <style>{`
+        .user-nav-name {
+          display: none;
+        }
         @media (min-width: 992px) {
           .desktop-nav {
             display: flex !important;
@@ -355,6 +594,9 @@ const Navbar = () => {
           }
           .mobile-toggle {
             display: none !important;
+          }
+          .user-nav-name {
+            display: inline !important;
           }
         }
         .nav-link-custom:hover .nav-underline {
