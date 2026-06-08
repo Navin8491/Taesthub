@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
 
 const AuthContext = createContext();
 
@@ -10,182 +9,175 @@ export const AuthProvider = ({ children }) => {
   const [authLoading, setAuthLoading] = useState(true);
   const [orders, setOrders] = useState({});
 
-  const loadUserData = async (authUser) => {
-    try {
-      // 1. Fetch user profile from public.profiles
-      let { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authUser.id)
-        .single();
-
-      if (error && error.code === 'PGRST116') {
-        // Profile doesn't exist yet, seed a default one using user metadata
-        const firstName = authUser.user_metadata?.first_name || authUser.email.split('@')[0];
-        const lastName = authUser.user_metadata?.last_name || '';
-        
-        const { data: newProfile, error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authUser.id,
-            email: authUser.email,
-            first_name: firstName,
-            last_name: lastName,
-            phone: authUser.phone || '',
-            address: '',
-            reward_points: 340
-          })
-          .select()
-          .single();
-
-        if (!insertError) {
-          profile = newProfile;
-        }
-      }
-
-      if (profile) {
-        setCurrentUser({
-          id: profile.id,
-          email: profile.email,
-          firstName: profile.first_name,
-          lastName: profile.last_name,
-          phone: profile.phone,
-          address: profile.address,
-          profilePic: profile.profile_pic,
-          rewardPoints: profile.reward_points
-        });
-
-        // 2. Fetch user orders
-        const { data: ordersList } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('user_id', authUser.id)
-          .order('date', { ascending: false });
-
-        if (ordersList) {
-          setOrders({
-            [authUser.email.toLowerCase()]: ordersList.map(o => ({
-              id: o.id,
-              date: o.date,
-              total: Number(o.total),
-              status: o.status,
-              billingDetails: o.billing_details,
-              items: o.items
-            }))
-          });
-        }
-      }
-    } catch (err) {
-      console.error("Error loading user profile/orders:", err);
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
+  // Initialize local database simulation on mount
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        loadUserData(session.user);
-      } else {
-        setAuthLoading(false);
-      }
-    });
+    // 1. Initialize users list if not exists
+    let localUsers = localStorage.getItem('tastehub_users');
+    if (!localUsers) {
+      const defaultUsers = [
+        {
+          id: 'user-john-doe',
+          email: 'john.doe@example.com',
+          password: 'password123',
+          firstName: 'John',
+          lastName: 'Doe',
+          phone: '+1 (555) 123-4567',
+          address: '123 Coffee Lane, Brew City, BC 12345',
+          profilePic: null,
+          rewardPoints: 340
+        }
+      ];
+      localStorage.setItem('tastehub_users', JSON.stringify(defaultUsers));
+      localUsers = JSON.stringify(defaultUsers);
+    }
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        await loadUserData(session.user);
-      } else {
-        setCurrentUser(null);
-        setOrders({});
-        setAuthLoading(false);
-      }
-    });
+    // 2. Initialize orders if not exists
+    let localOrders = localStorage.getItem('tastehub_orders');
+    if (!localOrders) {
+      localStorage.setItem('tastehub_orders', JSON.stringify({}));
+      localOrders = '{}';
+    }
+    setOrders(JSON.parse(localOrders));
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    // 3. Recover active user session
+    const storedUser = localStorage.getItem('tastehub_currentUser');
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+    
+    // Simulate minor delay for premium loading animation feel
+    const timer = setTimeout(() => {
+      setAuthLoading(false);
+    }, 600);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const login = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-    if (error) {
-      return { success: false, message: error.message };
+    // Simulate API network call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const localUsers = JSON.parse(localStorage.getItem('tastehub_users') || '[]');
+    const user = localUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+    if (!user) {
+      return { success: false, message: 'No user found with this email address.' };
     }
+
+    if (user.password !== password) {
+      return { success: false, message: 'Invalid password. Please try again.' };
+    }
+
+    // Omit password from session
+    const sessionUser = {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      address: user.address,
+      profilePic: user.profilePic,
+      rewardPoints: user.rewardPoints
+    };
+
+    localStorage.setItem('tastehub_currentUser', JSON.stringify(sessionUser));
+    setCurrentUser(sessionUser);
+
     return { success: true };
   };
 
   const register = async (userData) => {
-    // Sign up user
-    const { data, error } = await supabase.auth.signUp({
+    // Simulate API network call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const localUsers = JSON.parse(localStorage.getItem('tastehub_users') || '[]');
+    const exists = localUsers.some(u => u.email.toLowerCase() === userData.email.toLowerCase());
+
+    if (exists) {
+      return { success: false, message: 'An account with this email already exists.' };
+    }
+
+    const newUser = {
+      id: `user-${Math.floor(100000 + Math.random() * 900000)}`,
       email: userData.email,
       password: userData.password,
-      options: {
-        data: {
-          first_name: userData.firstName,
-          last_name: userData.lastName
-        }
-      }
-    });
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      phone: userData.phone || '',
+      address: userData.address || '',
+      profilePic: null,
+      rewardPoints: 340
+    };
 
-    if (error) {
-      return { success: false, message: error.message };
-    }
+    localUsers.push(newUser);
+    localStorage.setItem('tastehub_users', JSON.stringify(localUsers));
 
-    if (data.user) {
-      // Add custom profile row
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          email: userData.email,
-          first_name: userData.firstName,
-          last_name: userData.lastName,
-          phone: userData.phone || '',
-          address: userData.address || '',
-          reward_points: 340
-        });
+    // Log the user in immediately
+    const sessionUser = {
+      id: newUser.id,
+      email: newUser.email,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      phone: newUser.phone,
+      address: newUser.address,
+      profilePic: newUser.profilePic,
+      rewardPoints: newUser.rewardPoints
+    };
 
-      if (profileError) {
-        return { success: false, message: profileError.message };
-      }
-    }
+    localStorage.setItem('tastehub_currentUser', JSON.stringify(sessionUser));
+    setCurrentUser(sessionUser);
 
     return { success: true };
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    // Simulate minor network logout delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    localStorage.removeItem('tastehub_currentUser');
+    setCurrentUser(null);
   };
 
   const updateProfile = async (updatedData) => {
     if (!currentUser) return { success: false, message: 'Not logged in' };
 
-    const payload = {};
-    if (updatedData.firstName !== undefined) payload.first_name = updatedData.firstName;
-    if (updatedData.lastName !== undefined) payload.last_name = updatedData.lastName;
-    if (updatedData.phone !== undefined) payload.phone = updatedData.phone;
-    if (updatedData.address !== undefined) payload.address = updatedData.address;
-    if (updatedData.profilePic !== undefined) payload.profile_pic = updatedData.profilePic;
-    if (updatedData.rewardPoints !== undefined) payload.reward_points = updatedData.rewardPoints;
+    // Simulate minor delay
+    await new Promise(resolve => setTimeout(resolve, 300));
 
-    const { error } = await supabase
-      .from('profiles')
-      .update(payload)
-      .eq('id', currentUser.id);
+    const localUsers = JSON.parse(localStorage.getItem('tastehub_users') || '[]');
+    const userIndex = localUsers.findIndex(u => u.id === currentUser.id);
 
-    if (error) {
-      return { success: false, message: error.message };
+    if (userIndex === -1) {
+      return { success: false, message: 'User not found in local records.' };
     }
 
-    setCurrentUser(prev => ({
-      ...prev,
-      ...updatedData
-    }));
+    // Update in local users array
+    const updatedUserRecord = {
+      ...localUsers[userIndex],
+      firstName: updatedData.firstName !== undefined ? updatedData.firstName : localUsers[userIndex].firstName,
+      lastName: updatedData.lastName !== undefined ? updatedData.lastName : localUsers[userIndex].lastName,
+      phone: updatedData.phone !== undefined ? updatedData.phone : localUsers[userIndex].phone,
+      address: updatedData.address !== undefined ? updatedData.address : localUsers[userIndex].address,
+      profilePic: updatedData.profilePic !== undefined ? updatedData.profilePic : localUsers[userIndex].profilePic,
+      rewardPoints: updatedData.rewardPoints !== undefined ? updatedData.rewardPoints : localUsers[userIndex].rewardPoints
+    };
+
+    localUsers[userIndex] = updatedUserRecord;
+    localStorage.setItem('tastehub_users', JSON.stringify(localUsers));
+
+    // Update session
+    const sessionUser = {
+      id: updatedUserRecord.id,
+      email: updatedUserRecord.email,
+      firstName: updatedUserRecord.firstName,
+      lastName: updatedUserRecord.lastName,
+      phone: updatedUserRecord.phone,
+      address: updatedUserRecord.address,
+      profilePic: updatedUserRecord.profilePic,
+      rewardPoints: updatedUserRecord.rewardPoints
+    };
+
+    localStorage.setItem('tastehub_currentUser', JSON.stringify(sessionUser));
+    setCurrentUser(sessionUser);
 
     return { success: true };
   };
@@ -193,27 +185,11 @@ export const AuthProvider = ({ children }) => {
   const addOrder = async (orderItems, total, billingDetails) => {
     if (!currentUser) return null;
 
+    // Simulate minor delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     const newOrder = {
       id: `ORD-${Math.floor(10000 + Math.random() * 90000)}`,
-      user_id: currentUser.id,
-      email: currentUser.email,
-      total: total,
-      status: 'In Preparation',
-      billing_details: billingDetails,
-      items: orderItems
-    };
-
-    const { error } = await supabase
-      .from('orders')
-      .insert(newOrder);
-
-    if (error) {
-      console.error("Error inserting order in Supabase:", error);
-      throw error;
-    }
-
-    const mappedOrder = {
-      id: newOrder.id,
       date: new Date().toISOString(),
       total: total,
       status: 'In Preparation',
@@ -222,15 +198,16 @@ export const AuthProvider = ({ children }) => {
     };
 
     const userEmail = currentUser.email.toLowerCase();
-    setOrders(prev => {
-      const userOrders = prev[userEmail] || [];
-      return {
-        ...prev,
-        [userEmail]: [mappedOrder, ...userOrders]
-      };
-    });
+    const localOrders = JSON.parse(localStorage.getItem('tastehub_orders') || '{}');
+    const userOrders = localOrders[userEmail] || [];
+    
+    const updatedUserOrders = [newOrder, ...userOrders];
+    localOrders[userEmail] = updatedUserOrders;
 
-    return mappedOrder;
+    localStorage.setItem('tastehub_orders', JSON.stringify(localOrders));
+    setOrders(localOrders);
+
+    return newOrder;
   };
 
   const getUserOrders = () => {
