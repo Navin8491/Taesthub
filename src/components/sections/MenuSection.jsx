@@ -2,31 +2,64 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { db } from '../../firebaseClient';
+import { collection, getDocs } from 'firebase/firestore';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ShoppingCart, Check } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const menuItems = [
-  { id: 1, name: "Delicious Pizza", category: "pizza", price: 20, desc: "Premium mozzarella, fresh basil, and our signature tomato sauce on a hand-tossed crust.", image: "/images/f1.png" },
-  { id: 2, name: "Delicious Burger", category: "burger", price: 15, desc: "Wagyu beef patty with caramelized onions, cheddar cheese, and house sauce on a brioche bun.", image: "/images/f2.png" },
-  { id: 3, name: "Delicious Pizza", category: "pizza", price: 17, desc: "Wood-fired pizza topped with spicy pepperoni, jalapenos, and a drizzle of hot honey.", image: "/images/f3.png" },
-  { id: 4, name: "Delicious Pasta", category: "pasta", price: 18, desc: "Handmade fettuccine tossed in a rich, creamy truffle alfredo sauce with shaved parmesan.", image: "/images/f4.png" },
-  { id: 5, name: "French Fries", category: "fries", price: 10, desc: "Crispy golden fries seasoned with sea salt and rosemary, served with garlic aioli.", image: "/images/f5.png" },
-  { id: 6, name: "Delicious Pizza", category: "pizza", price: 15, desc: "Classic Margherita pizza with fresh heirloom tomatoes, basil, and a balsamic glaze.", image: "/images/f6.png" },
-  { id: 7, name: "Tasty Burger", category: "burger", price: 12, desc: "Crispy fried chicken sandwich with spicy mayo, pickles, and crisp lettuce.", image: "/images/f7.png" },
-  { id: 8, name: "Tasty Burger", category: "burger", price: 14, desc: "Double smash burger with American cheese, pickles, and our secret house spread.", image: "/images/f8.png" },
-  { id: 9, name: "Delicious Pasta", category: "pasta", price: 10, desc: "Spaghetti tossed in a vibrant basil pesto with pine nuts and cherry tomatoes.", image: "/images/f9.png" },
-];
-
 const MenuSection = ({ hideHeading = false }) => {
   const [filter, setFilter] = useState('*');
   const [toastMessage, setToastMessage] = useState('');
   const [visibleCount, setVisibleCount] = useState(6);
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
   const { addToCart } = useCart();
   const location = useLocation();
   const gridRef = useRef(null);
+
+  // Fetch products and categories dynamically from Firestore
+  useEffect(() => {
+    const fetchMenuData = async () => {
+      try {
+        // Fetch Categories
+        const catSnapshot = await getDocs(collection(db, 'categories'));
+        const catList = [];
+        catSnapshot.forEach((doc) => {
+          catList.push(doc.data());
+        });
+        setCategories(catList);
+
+        // Fetch Products
+        const prodSnapshot = await getDocs(collection(db, 'products'));
+        const prodList = [];
+        prodSnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.isAvailable !== false) {
+            prodList.push({
+              id: data.productId,
+              name: data.name,
+              category: data.categoryId,
+              price: data.price,
+              desc: data.description,
+              image: data.image
+            });
+          }
+        });
+        setProducts(prodList);
+      } catch (error) {
+        console.error("Error fetching menu data from Firestore:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenuData();
+  }, []);
 
   const handleAddToCart = (item) => {
     addToCart(item);
@@ -37,14 +70,14 @@ const MenuSection = ({ hideHeading = false }) => {
   };
 
   const filteredItems = filter === '*' 
-    ? menuItems 
-    : menuItems.filter(item => `.${item.category}` === filter);
+    ? products 
+    : products.filter(item => `.${item.category}` === filter);
 
   const displayedItems = filteredItems.slice(0, visibleCount);
 
   // GSAP ScrollTrigger & Stagger Animation for Grid
   useEffect(() => {
-    if (gridRef.current) {
+    if (!loading && gridRef.current) {
       const cards = gridRef.current.querySelectorAll('.menu-card-wrapper');
       
       // Reset previous ScrollTriggers for this element
@@ -92,7 +125,7 @@ const MenuSection = ({ hideHeading = false }) => {
         );
       }
     }
-  }, [filter, visibleCount]);
+  }, [filter, visibleCount, loading]);
 
   const handleLoadMore = (e) => {
     e.preventDefault();
@@ -101,11 +134,17 @@ const MenuSection = ({ hideHeading = false }) => {
 
   const filters = [
     { label: 'All', value: '*' },
-    { label: 'Burger', value: '.burger' },
-    { label: 'Pizza', value: '.pizza' },
-    { label: 'Pasta', value: '.pasta' },
-    { label: 'Fries', value: '.fries' },
+    ...categories.map(c => ({ label: c.name, value: `.${c.categoryId}` }))
   ];
+
+  if (loading) {
+    return (
+      <div style={{ height: '50vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#F8F5F2' }}>
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid rgba(111,78,55,0.2)', borderTopColor: '#6F4E37', animation: 'spin 1s linear infinite' }}></div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
   return (
     <section 

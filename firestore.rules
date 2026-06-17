@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Users collection
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 2. Products collection
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null; // Allow write for authenticated sessions (seeding/admin-like updates)
+    }
+    
+    // 3. Categories collection
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // 4. Cart & Cart Items
+    match /cart/{cartId} {
+      allow read, write: if request.auth != null && request.auth.uid == cartId;
+    }
+    match /cart_items/{itemId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // 5. Orders & Order Items
+    match /orders/{orderId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    match /order_items/{itemId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // 6. Bookings
+    match /bookings/{bookingId} {
+      allow create: if true; // Anyone (guests and registered users) can book a table
+      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // 7. Reviews
+    match /reviews/{reviewId} {
+      allow read: if true; // Testimonials are public
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // 8. Addresses
+    match /addresses/{addressId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // 9. Contact Messages
+    match /contact_messages/{messageId} {
+      allow create: if true; // Anyone can send a message
+      allow read, update, delete: if request.auth != null; // Authenticated staff only
+    }
+    
+    // 10. Newsletter Subscribers
+    match /newsletter_subscribers/{email} {
+      allow create, update: if true; // Public subscription signup
+      allow read: if request.auth != null;
+    }
+  }
+}

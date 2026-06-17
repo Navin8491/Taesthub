@@ -117,7 +117,7 @@ const Register = () => {
                 )}
 
                 {/* Form */}
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} autoComplete="off">
                   {/* Name Row */}
                   <div className="row">
                     <div className="col-md-6 mb-3">
@@ -135,6 +135,7 @@ const Register = () => {
                           placeholder="John"
                           value={firstName}
                           onChange={(e) => setFirstName(e.target.value)}
+                          autoComplete="off"
                           style={{
                             height: '50px',
                             paddingLeft: '45px',
@@ -171,6 +172,7 @@ const Register = () => {
                           placeholder="Doe"
                           value={lastName}
                           onChange={(e) => setLastName(e.target.value)}
+                          autoComplete="off"
                           style={{
                             height: '50px',
                             paddingLeft: '45px',
@@ -211,6 +213,7 @@ const Register = () => {
                           placeholder="name@example.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
+                          autoComplete="off"
                           style={{
                             height: '50px',
                             paddingLeft: '45px',
@@ -247,6 +250,7 @@ const Register = () => {
                           placeholder="+1 (555) 000-0000"
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
+                          autoComplete="off"
                           style={{
                             height: '50px',
                             paddingLeft: '45px',
@@ -286,6 +290,7 @@ const Register = () => {
                         placeholder="Street address, City, State, ZIP code"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
+                        autoComplete="off"
                         style={{
                           paddingLeft: '45px',
                           borderRadius: '12px',
@@ -324,6 +329,7 @@ const Register = () => {
                           placeholder="Password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
+                          autoComplete="new-password"
                           style={{
                             height: '50px',
                             paddingLeft: '45px',
@@ -380,6 +386,7 @@ const Register = () => {
                           placeholder="Confirm"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
+                          autoComplete="new-password"
                           style={{
                             height: '50px',
                             paddingLeft: '45px',

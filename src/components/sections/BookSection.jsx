@@ -1,13 +1,37 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { MapPin, Phone, Clock, Facebook, Twitter, Instagram } from 'lucide-react';
+import { MapPin, Phone, Clock, Facebook, Twitter, Instagram, CheckCircle2 } from 'lucide-react';
+import { db, auth } from '../../firebaseClient';
+import { doc, setDoc } from 'firebase/firestore';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const BookSection = () => {
   const sectionRef = useRef(null);
 
+  // Form states
+  const [customerName, setCustomerName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [guests, setGuests] = useState('');
+  const [bookingDate, setBookingDate] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  // Pre-fill user data if logged in
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        setEmail(user.email || '');
+        setCustomerName(user.displayName || '');
+        setPhone(user.phoneNumber || '');
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // GSAP Animations
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Stagger entrance for form and info sections
@@ -32,6 +56,44 @@ const BookSection = () => {
 
     return () => ctx.revert();
   }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccess(false);
+
+    try {
+      const bookingId = `book-${Math.floor(100000 + Math.random() * 900000)}`;
+      const currentUserId = auth.currentUser ? auth.currentUser.uid : null;
+      
+      const bookingData = {
+        bookingId: bookingId,
+        userId: currentUserId,
+        customerName: customerName,
+        phone: phone,
+        email: email,
+        bookingDate: bookingDate,
+        bookingTime: "19:00", // Default dinner reservation time
+        guests: guests,
+        status: "Pending",
+        createdAt: new Date().toISOString()
+      };
+
+      await setDoc(doc(db, "bookings", bookingId), bookingData);
+      
+      setSuccess(true);
+      // Clear inputs
+      setCustomerName('');
+      setPhone('');
+      setGuests('');
+      setBookingDate('');
+    } catch (err) {
+      console.error("Booking failed:", err);
+      alert("We encountered an error placing your reservation. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <section 
@@ -78,11 +140,10 @@ const BookSection = () => {
             transform: translateY(-26px) scale(0.85);
             color: #6F4E37;
             font-weight: 600;
-            background: #F8F5F2; /* Match parent/near parent to block out border */
+            background: #F8F5F2;
             padding: 0 4px;
             border-radius: 4px;
           }
-          /* Custom styles for select and date to mimic floating label easily */
           .float-select, .float-date {
             padding-top: 16px;
           }
@@ -132,64 +193,123 @@ const BookSection = () => {
               border: '1px solid rgba(255, 255, 255, 0.4)',
               boxShadow: '0 20px 40px rgba(0,0,0,0.05)'
             }}>
-              <form action="" onSubmit={(e) => e.preventDefault()}>
-                
+              {success && (
+                <div className="alert alert-success border-0 p-3 mb-4 d-flex align-items-center gap-2" style={{ borderRadius: '12px', backgroundColor: '#EBFBEE', color: '#2b8a3e', fontSize: '14.5px', fontFamily: "'Inter', sans-serif" }}>
+                  <CheckCircle2 size={20} />
+                  <span>Table reservation sent successfully! We will contact you soon.</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit}>
                 <div className="float-group">
-                  <input type="text" className="float-input" id="name" placeholder=" " required />
+                  <input 
+                    type="text" 
+                    className="float-input" 
+                    id="name" 
+                    placeholder=" " 
+                    required 
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                  />
                   <label htmlFor="name" className="float-label">Your Name</label>
                 </div>
                 
                 <div className="float-group">
-                  <input type="tel" className="float-input" id="phone" placeholder=" " required />
+                  <input 
+                    type="tel" 
+                    className="float-input" 
+                    id="phone" 
+                    placeholder=" " 
+                    required 
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
                   <label htmlFor="phone" className="float-label">Phone Number</label>
                 </div>
                 
                 <div className="float-group">
-                  <input type="email" className="float-input" id="email" placeholder=" " required />
+                  <input 
+                    type="email" 
+                    className="float-input" 
+                    id="email" 
+                    placeholder=" " 
+                    required 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                   <label htmlFor="email" className="float-label">Your Email</label>
                 </div>
                 
                 <div className="float-group">
-                  <select className="float-select" defaultValue="" required style={{ color: '#1E1E1E' }}>
+                  <select 
+                    className="float-select" 
+                    value={guests} 
+                    onChange={(e) => setGuests(e.target.value)}
+                    required 
+                    style={{ color: '#1E1E1E' }}
+                  >
                     <option value="" disabled hidden>How many persons?</option>
-                    <option value="2">2 Persons</option>
-                    <option value="3">3 Persons</option>
-                    <option value="4">4 Persons</option>
-                    <option value="5">5+ Persons</option>
+                    <option value="2 Persons">2 Persons</option>
+                    <option value="3 Persons">3 Persons</option>
+                    <option value="4 Persons">4 Persons</option>
+                    <option value="5+ Persons">5+ Persons</option>
                   </select>
                 </div>
                 
                 <div className="float-group">
-                  <input type="date" className="float-input float-date" required style={{ color: '#777' }} onChange={(e) => e.target.style.color = '#1E1E1E'} />
+                  <input 
+                    type="date" 
+                    className="float-input float-date" 
+                    required 
+                    value={bookingDate}
+                    onChange={(e) => setBookingDate(e.target.value)}
+                    style={{ color: bookingDate ? '#1E1E1E' : '#777' }} 
+                  />
                 </div>
                 
                 <div className="btn_box mt-4">
-                  <button type="submit" style={{ 
-                    width: '100%',
-                    backgroundColor: '#1E1E1E', 
-                    color: '#fff', 
-                    border: 'none', 
-                    padding: '16px', 
-                    borderRadius: '12px', 
-                    fontFamily: "'Poppins', sans-serif",
-                    fontWeight: 600,
-                    fontSize: '1.1rem',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.backgroundColor = '#6F4E37';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 15px 25px rgba(111,78,55,0.2)';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.backgroundColor = '#1E1E1E';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)';
-                  }}
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    style={{ 
+                      width: '100%',
+                      backgroundColor: '#1E1E1E', 
+                      color: '#fff', 
+                      border: 'none', 
+                      padding: '16px', 
+                      borderRadius: '12px', 
+                      fontFamily: "'Poppins', sans-serif",
+                      fontWeight: 600,
+                      fontSize: '1.1rem',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                    onMouseEnter={e => {
+                      if (!loading) {
+                        e.currentTarget.style.backgroundColor = '#6F4E37';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 15px 25px rgba(111,78,55,0.2)';
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!loading) {
+                        e.currentTarget.style.backgroundColor = '#1E1E1E';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)';
+                      }
+                    }}
                   >
-                    Reserve Now
+                    {loading ? (
+                      <div style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', animation: 'spin 0.8s linear infinite' }} />
+                    ) : (
+                      "Reserve Now"
+                    )}
                   </button>
+                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                 </div>
               </form>
             </div>

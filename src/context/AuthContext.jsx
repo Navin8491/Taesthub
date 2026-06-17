@@ -1,4 +1,20 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { auth, db } from '../firebaseClient';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged 
+} from 'firebase/auth';
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  collection, 
+  query, 
+  where, 
+  getDocs 
+} from 'firebase/firestore';
 
 const AuthContext = createContext();
 
@@ -7,212 +23,331 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [orders, setOrders] = useState({});
+  const [userOrders, setUserOrders] = useState([]);
 
-  // Initialize local database simulation on mount
+  // Fetch orders and their split items from Firestore
+  const fetchUserOrders = async (userId) => {
+    try {
+      const ordersQuery = query(collection(db, 'orders'), where('userId', '==', userId));
+      const ordersSnapshot = await getDocs(ordersQuery);
+      const ordersList = [];
+      
+      for (const orderDoc of ordersSnapshot.docs) {
+        const orderData = orderDoc.data();
+        
+        // Fetch order items for this order
+        const itemsQuery = query(collection(db, 'order_items'), where('orderId', '==', orderData.orderId));
+        const itemsSnapshot = await getDocs(itemsQuery);
+        const itemsList = [];
+        
+        itemsSnapshot.forEach((itemDoc) => {
+          const itemData = itemDoc.data();
+          itemsList.push({
+            id: itemData.productId,
+            name: itemData.name || '',
+            category: itemData.category || '',
+            price: itemData.price,
+            quantity: itemData.quantity,
+            image: itemData.image || '/images/f1.png'
+          });
+        });
+
+        ordersList.push({
+          id: orderData.orderId,
+          date: orderData.createdAt,
+          total: orderData.totalAmount,
+          status: orderData.orderStatus || 'In Preparation',
+          billingDetails: orderData.billingDetails || {},
+          items: itemsList
+        });
+      }
+      
+      // Sort orders descending by date
+      ordersList.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setUserOrders(ordersList);
+    } catch (error) {
+      console.error("Error fetching user orders:", error);
+      setUserOrders([]);
+    }
+  };
+
+  // Listen to Firebase Auth state changes
   useEffect(() => {
-    // 1. Initialize users list if not exists
-    let localUsers = localStorage.getItem('tastehub_users');
-    if (!localUsers) {
-      const defaultUsers = [
-        {
-          id: 'user-john-doe',
-          email: 'john.doe@example.com',
-          password: 'password123',
-          firstName: 'John',
-          lastName: 'Doe',
-          phone: '+1 (555) 123-4567',
-          address: '123 Coffee Lane, Brew City, BC 12345',
-          profilePic: null,
-          rewardPoints: 340
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          // Fetch user profile from Firestore users collection
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          let userData = null;
+          
+          if (userDoc.exists()) {
+            const docData = userDoc.data();
+            userData = {
+              id: firebaseUser.uid,
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              name: docData.name || '',
+              firstName: docData.name ? docData.name.split(' ')[0] : 'User',
+              lastName: docData.name ? docData.name.split(' ').slice(1).join(' ') : '',
+              phone: docData.phone || '',
+              address: docData.address || '',
+              profilePic: docData.photoURL || null,
+              photoURL: docData.photoURL || null,
+              rewardPoints: docData.rewardPoints || 340,
+              role: docData.role || 'customer',
+              createdAt: docData.createdAt,
+              updatedAt: docData.updatedAt
+            };
+          } else {
+            // Fallback: Create default profile if not exists
+            const name = firebaseUser.displayName || 'User';
+            userData = {
+              id: firebaseUser.uid,
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              name: name,
+              firstName: name.split(' ')[0],
+              lastName: name.split(' ').slice(1).join(' '),
+              phone: firebaseUser.phoneNumber || '',
+              address: '',
+              profilePic: null,
+              photoURL: null,
+              rewardPoints: 340,
+              role: 'customer',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            };
+            
+            // Save to users collection
+            await setDoc(doc(db, 'users', firebaseUser.uid), {
+              uid: userData.uid,
+              name: userData.name,
+              email: userData.email,
+              phone: userData.phone,
+              photoURL: userData.photoURL,
+              role: userData.role,
+              createdAt: userData.createdAt,
+              updatedAt: userData.updatedAt
+            });
+          }
+          
+          setCurrentUser(userData);
+          await fetchUserOrders(firebaseUser.uid);
+        } catch (error) {
+          console.error("Error fetching user data from Firebase:", error);
+          // Fallback to minimal user state on error so app doesn't crash
+          setCurrentUser({
+            id: firebaseUser.uid,
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            firstName: 'User',
+            lastName: '',
+            name: 'User',
+            phone: '',
+            address: '',
+            profilePic: null,
+            photoURL: null,
+            rewardPoints: 340,
+            role: 'customer'
+          });
+          setUserOrders([]);
         }
-      ];
-      localStorage.setItem('tastehub_users', JSON.stringify(defaultUsers));
-      localUsers = JSON.stringify(defaultUsers);
-    }
-
-    // 2. Initialize orders if not exists
-    let localOrders = localStorage.getItem('tastehub_orders');
-    if (!localOrders) {
-      localStorage.setItem('tastehub_orders', JSON.stringify({}));
-      localOrders = '{}';
-    }
-    setOrders(JSON.parse(localOrders));
-
-    // 3. Recover active user session
-    const storedUser = localStorage.getItem('tastehub_currentUser');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
-    
-    // Simulate minor delay for premium loading animation feel
-    const timer = setTimeout(() => {
+      } else {
+        setCurrentUser(null);
+        setUserOrders([]);
+      }
       setAuthLoading(false);
-    }, 600);
+    });
 
-    return () => clearTimeout(timer);
+    return () => unsubscribe();
   }, []);
 
   const login = async (email, password) => {
-    // Simulate API network call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const localUsers = JSON.parse(localStorage.getItem('tastehub_users') || '[]');
-    const user = localUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-
-    if (!user) {
-      return { success: false, message: 'No user found with this email address.' };
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      return { success: true };
+    } catch (error) {
+      console.error("Login failed:", error);
+      let message = 'An error occurred during login. Please try again.';
+      if (
+        error.code === 'auth/user-not-found' || 
+        error.code === 'auth/wrong-password' || 
+        error.code === 'auth/invalid-credential'
+      ) {
+        message = 'Invalid email or password. Please try again.';
+      } else if (error.code === 'auth/invalid-email') {
+        message = 'Please enter a valid email address.';
+      } else if (error.code === 'auth/too-many-requests') {
+        message = 'Too many failed login attempts. Please try again later.';
+      }
+      return { success: false, message: message };
     }
-
-    if (user.password !== password) {
-      return { success: false, message: 'Invalid password. Please try again.' };
-    }
-
-    // Omit password from session
-    const sessionUser = {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phone: user.phone,
-      address: user.address,
-      profilePic: user.profilePic,
-      rewardPoints: user.rewardPoints
-    };
-
-    localStorage.setItem('tastehub_currentUser', JSON.stringify(sessionUser));
-    setCurrentUser(sessionUser);
-
-    return { success: true };
   };
 
   const register = async (userData) => {
-    // Simulate API network call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
+      const firebaseUser = userCredential.user;
 
-    const localUsers = JSON.parse(localStorage.getItem('tastehub_users') || '[]');
-    const exists = localUsers.some(u => u.email.toLowerCase() === userData.email.toLowerCase());
+      const name = `${userData.firstName} ${userData.lastName}`.trim();
+      const newProfile = {
+        uid: firebaseUser.uid,
+        name: name,
+        email: userData.email,
+        phone: userData.phone || '',
+        photoURL: null,
+        role: 'customer',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
 
-    if (exists) {
-      return { success: false, message: 'An account with this email already exists.' };
+      // Save user to users collection in Firestore
+      await setDoc(doc(db, 'users', firebaseUser.uid), newProfile);
+      
+      // Update local state immediately
+      setCurrentUser({
+        id: firebaseUser.uid,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        address: userData.address || '',
+        rewardPoints: 340,
+        profilePic: null,
+        ...newProfile
+      });
+      setUserOrders([]);
+
+      return { success: true };
+    } catch (error) {
+      console.error("Registration failed:", error);
+      let message = 'An error occurred during registration.';
+      if (error.code === 'auth/email-already-in-use') {
+        message = 'An account with this email already exists.';
+      } else if (error.code === 'auth/invalid-email') {
+        message = 'Please enter a valid email address.';
+      } else if (error.code === 'auth/weak-password') {
+        message = 'Password must be at least 6 characters.';
+      }
+      return { success: false, message: message };
     }
-
-    const newUser = {
-      id: `user-${Math.floor(100000 + Math.random() * 900000)}`,
-      email: userData.email,
-      password: userData.password,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      phone: userData.phone || '',
-      address: userData.address || '',
-      profilePic: null,
-      rewardPoints: 340
-    };
-
-    localUsers.push(newUser);
-    localStorage.setItem('tastehub_users', JSON.stringify(localUsers));
-
-    // Log the user in immediately
-    const sessionUser = {
-      id: newUser.id,
-      email: newUser.email,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      phone: newUser.phone,
-      address: newUser.address,
-      profilePic: newUser.profilePic,
-      rewardPoints: newUser.rewardPoints
-    };
-
-    localStorage.setItem('tastehub_currentUser', JSON.stringify(sessionUser));
-    setCurrentUser(sessionUser);
-
-    return { success: true };
   };
 
   const logout = async () => {
-    // Simulate minor network logout delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    localStorage.removeItem('tastehub_currentUser');
-    setCurrentUser(null);
+    try {
+      await signOut(auth);
+      setCurrentUser(null);
+      setUserOrders([]);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const updateProfile = async (updatedData) => {
     if (!currentUser) return { success: false, message: 'Not logged in' };
 
-    // Simulate minor delay
-    await new Promise(resolve => setTimeout(resolve, 300));
+    try {
+      const name = `${updatedData.firstName !== undefined ? updatedData.firstName : currentUser.firstName} ${updatedData.lastName !== undefined ? updatedData.lastName : currentUser.lastName}`.trim();
+      
+      const updatedUser = {
+        ...currentUser,
+        name: name,
+        firstName: updatedData.firstName !== undefined ? updatedData.firstName : currentUser.firstName,
+        lastName: updatedData.lastName !== undefined ? updatedData.lastName : currentUser.lastName,
+        phone: updatedData.phone !== undefined ? updatedData.phone : currentUser.phone,
+        address: updatedData.address !== undefined ? updatedData.address : currentUser.address,
+        photoURL: updatedData.profilePic !== undefined ? updatedData.profilePic : currentUser.photoURL,
+        profilePic: updatedData.profilePic !== undefined ? updatedData.profilePic : currentUser.profilePic,
+        rewardPoints: updatedData.rewardPoints !== undefined ? updatedData.rewardPoints : currentUser.rewardPoints,
+        updatedAt: new Date().toISOString()
+      };
 
-    const localUsers = JSON.parse(localStorage.getItem('tastehub_users') || '[]');
-    const userIndex = localUsers.findIndex(u => u.id === currentUser.id);
+      // Exclude mapping states from the users collection save
+      const dataToSave = {
+        uid: currentUser.uid,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        photoURL: updatedUser.photoURL,
+        role: updatedUser.role || 'customer',
+        address: updatedUser.address,
+        rewardPoints: updatedUser.rewardPoints,
+        createdAt: currentUser.createdAt || new Date().toISOString(),
+        updatedAt: updatedUser.updatedAt
+      };
 
-    if (userIndex === -1) {
-      return { success: false, message: 'User not found in local records.' };
+      await setDoc(doc(db, 'users', currentUser.uid), dataToSave, { merge: true });
+      setCurrentUser(updatedUser);
+
+      return { success: true };
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      return { success: false, message: error.message || 'Failed to update profile.' };
     }
-
-    // Update in local users array
-    const updatedUserRecord = {
-      ...localUsers[userIndex],
-      firstName: updatedData.firstName !== undefined ? updatedData.firstName : localUsers[userIndex].firstName,
-      lastName: updatedData.lastName !== undefined ? updatedData.lastName : localUsers[userIndex].lastName,
-      phone: updatedData.phone !== undefined ? updatedData.phone : localUsers[userIndex].phone,
-      address: updatedData.address !== undefined ? updatedData.address : localUsers[userIndex].address,
-      profilePic: updatedData.profilePic !== undefined ? updatedData.profilePic : localUsers[userIndex].profilePic,
-      rewardPoints: updatedData.rewardPoints !== undefined ? updatedData.rewardPoints : localUsers[userIndex].rewardPoints
-    };
-
-    localUsers[userIndex] = updatedUserRecord;
-    localStorage.setItem('tastehub_users', JSON.stringify(localUsers));
-
-    // Update session
-    const sessionUser = {
-      id: updatedUserRecord.id,
-      email: updatedUserRecord.email,
-      firstName: updatedUserRecord.firstName,
-      lastName: updatedUserRecord.lastName,
-      phone: updatedUserRecord.phone,
-      address: updatedUserRecord.address,
-      profilePic: updatedUserRecord.profilePic,
-      rewardPoints: updatedUserRecord.rewardPoints
-    };
-
-    localStorage.setItem('tastehub_currentUser', JSON.stringify(sessionUser));
-    setCurrentUser(sessionUser);
-
-    return { success: true };
   };
 
   const addOrder = async (orderItems, total, billingDetails) => {
     if (!currentUser) return null;
 
-    // Simulate minor delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const orderId = `ORD-${Math.floor(10000 + Math.random() * 90000)}`;
+      
+      // 1. Save to orders (header)
+      const orderHeader = {
+        orderId: orderId,
+        userId: currentUser.uid,
+        totalAmount: total,
+        paymentStatus: 'Paid',
+        orderStatus: 'In Preparation',
+        createdAt: new Date().toISOString(),
+        billingDetails: billingDetails
+      };
+      await setDoc(doc(db, 'orders', orderId), orderHeader);
+      
+      // 2. Save items to order_items (split collection)
+      const mappedItems = [];
+      for (const item of orderItems) {
+        const itemId = `oi-${Math.floor(100000 + Math.random() * 900000)}`;
+        const orderItem = {
+          orderItemId: itemId,
+          orderId: orderId,
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price,
+          name: item.name,
+          category: item.category || '',
+          image: item.image || '/images/f1.png'
+        };
+        await setDoc(doc(db, 'order_items', itemId), orderItem);
+        mappedItems.push({
+          id: item.id,
+          name: item.name,
+          category: item.category || '',
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image || '/images/f1.png'
+        });
+      }
 
-    const newOrder = {
-      id: `ORD-${Math.floor(10000 + Math.random() * 90000)}`,
-      date: new Date().toISOString(),
-      total: total,
-      status: 'In Preparation',
-      billingDetails: billingDetails,
-      items: orderItems
-    };
+      const newOrder = {
+        id: orderId,
+        date: orderHeader.createdAt,
+        total: total,
+        status: orderHeader.orderStatus,
+        billingDetails: billingDetails,
+        items: mappedItems
+      };
+      
+      // Prepend to local user orders list
+      setUserOrders(prevOrders => [newOrder, ...prevOrders]);
 
-    const userEmail = currentUser.email.toLowerCase();
-    const localOrders = JSON.parse(localStorage.getItem('tastehub_orders') || '{}');
-    const userOrders = localOrders[userEmail] || [];
-    
-    const updatedUserOrders = [newOrder, ...userOrders];
-    localOrders[userEmail] = updatedUserOrders;
-
-    localStorage.setItem('tastehub_orders', JSON.stringify(localOrders));
-    setOrders(localOrders);
-
-    return newOrder;
+      return newOrder;
+    } catch (error) {
+      console.error("Failed to add order:", error);
+      return null;
+    }
   };
 
   const getUserOrders = () => {
-    if (!currentUser) return [];
-    return orders[currentUser.email.toLowerCase()] || [];
+    return userOrders;
   };
 
   return (
@@ -237,3 +372,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+export default AuthContext;

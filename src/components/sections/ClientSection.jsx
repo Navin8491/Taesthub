@@ -1,50 +1,38 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { db } from '../../firebaseClient';
+import { collection, getDocs } from 'firebase/firestore';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const testimonials = [
-  {
-    id: 1,
-    name: "Moana Michell",
-    subtitle: "Food Enthusiast",
-    rating: 5,
-    text: "The flavors here are absolutely incredible. Every dish feels like a work of art. The atmosphere is warm and the service is truly exceptional. I highly recommend the premium pasta!",
-    image: "/images/client1.jpg"
-  },
-  {
-    id: 2,
-    name: "Mike Hamell",
-    subtitle: "Local Guide",
-    rating: 5,
-    text: "I've been to many cafes, but TasteHub stands out. The coffee is roasted to perfection and their signature burgers are bursting with flavor. A must-visit spot in the city.",
-    image: "/images/client2.jpg"
-  },
-  {
-    id: 3,
-    name: "John Doe",
-    subtitle: "Coffee Connoisseur",
-    rating: 4,
-    text: "Stunning interior and beautifully presented food. The caramel latte is to die for. It can get a bit busy during lunch, but the quality never dips. Excellent experience overall.",
-    image: "/images/client1.jpg"
-  },
-  {
-    id: 4,
-    name: "Jane Smith",
-    subtitle: "Pastry Chef",
-    rating: 5,
-    text: "As someone who bakes professionally, I am blown away by their artisan pizzas. The crust is perfectly fermented and charred. Absolutely delicious and perfectly balanced.",
-    image: "/images/client2.jpg"
-  }
-];
-
 const ClientSection = () => {
+  const [testimonials, setTestimonials] = useState([]);
   const [current, setCurrent] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [loading, setLoading] = useState(true);
   const sectionRef = useRef(null);
+
+  // Load reviews/testimonials dynamically from Firestore
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'reviews'));
+        const list = [];
+        querySnapshot.forEach((doc) => {
+          list.push(doc.data());
+        });
+        setTestimonials(list);
+      } catch (error) {
+        console.error("Error fetching reviews from Firestore:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReviews();
+  }, []);
 
   // Responsive check for testimonials count
   useEffect(() => {
@@ -58,6 +46,7 @@ const ClientSection = () => {
 
   // GSAP Scroll Animation
   useEffect(() => {
+    if (loading) return;
     const ctx = gsap.context(() => {
       gsap.fromTo(".heading_container",
         { y: 50, opacity: 0 },
@@ -92,18 +81,22 @@ const ClientSection = () => {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [loading]);
 
   // Carousel Logic
   useEffect(() => {
+    if (loading || testimonials.length === 0) return;
     const timer = setInterval(() => {
       const maxLimit = isMobile ? testimonials.length : testimonials.length - 1;
-      setCurrent((prev) => (prev + 1) % maxLimit);
+      if (maxLimit > 0) {
+        setCurrent((prev) => (prev + 1) % maxLimit);
+      }
     }, 6000);
     return () => clearInterval(timer);
-  }, [isMobile]);
+  }, [isMobile, loading, testimonials]);
 
   const handlePrev = () => {
+    if (testimonials.length === 0) return;
     setCurrent((prev) => {
       if (isMobile) {
         return prev === 0 ? testimonials.length - 1 : prev - 1;
@@ -114,8 +107,11 @@ const ClientSection = () => {
   };
 
   const handleNext = () => {
+    if (testimonials.length === 0) return;
     const maxLimit = isMobile ? testimonials.length : testimonials.length - 1;
-    setCurrent((prev) => (prev + 1) % maxLimit);
+    if (maxLimit > 0) {
+      setCurrent((prev) => (prev + 1) % maxLimit);
+    }
   };
 
   // Render Stars
@@ -133,6 +129,10 @@ const ClientSection = () => {
       </div>
     );
   };
+
+  if (loading || testimonials.length === 0) {
+    return null; // Don't show the testimonials block until loaded
+  }
 
   return (
     <section 
@@ -161,7 +161,7 @@ const ClientSection = () => {
                   ? [testimonials[current]] 
                   : [testimonials[current], testimonials[current + 1]].filter(Boolean)
                 ).map((testimonial, idx) => (
-                  <div key={`${testimonial.id}-${idx}`} className="col-md-6 mb-4 mb-md-0">
+                  <div key={`${testimonial.reviewId || testimonial.id}-${idx}`} className="col-md-6 mb-4 mb-md-0">
                     <motion.div 
                       className="testimonial-card"
                       whileHover={{ scale: 1.02, y: -5 }}
