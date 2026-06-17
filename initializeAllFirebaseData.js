@@ -179,8 +179,8 @@ async function seed() {
   };
   
   const orderItemsData = [
-    { orderItemId: "oi-1", orderId: orderId, productId: "p1", quantity: 2, price: 20 },
-    { orderItemId: "oi-2", orderId: orderId, productId: "p5", quantity: 1, price: 5 }
+    { orderItemId: "oi-1", orderId: orderId, userId: uid, productId: "p1", quantity: 2, price: 20 },
+    { orderItemId: "oi-2", orderId: orderId, userId: uid, productId: "p5", quantity: 1, price: 5 }
   ];
 
   await setDoc(doc(db, "orders", orderId), orderHeader);

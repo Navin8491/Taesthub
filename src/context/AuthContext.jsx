@@ -309,6 +309,7 @@ export const AuthProvider = ({ children }) => {
         const orderItem = {
           orderItemId: itemId,
           orderId: orderId,
+          userId: currentUser.uid,
           productId: item.id,
           quantity: item.quantity,
           price: item.price,
