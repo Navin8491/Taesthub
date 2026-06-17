@@ -4,6 +4,7 @@ import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+console.log("PROJECT ID:", import.meta.env.VITE_FIREBASE_PROJECT_ID);
 // Your web app's Firebase configuration
 // Loaded securely from environment variables at build-time
 const firebaseConfig = {
